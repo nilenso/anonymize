@@ -1,5 +1,6 @@
 package com.anonymize.core;
 
+import com.anonymize.common.Locale;
 import com.anonymize.common.PIIEntity;
 import com.anonymize.strategies.RedactionStrategy;
 
@@ -14,14 +15,40 @@ public class AnonymizationResult {
     private final String redactedText;
     private final List<PIIEntity> detectedEntities;
     private final RedactionStrategy strategyUsed;
+    private final Locale locale;
 
+    /**
+     * Creates a new anonymization result.
+     *
+     * @param originalText The original text before redaction
+     * @param redactedText The redacted text
+     * @param detectedEntities List of detected PII entities
+     * @param strategyUsed The redaction strategy used
+     */
     public AnonymizationResult(String originalText, String redactedText, 
                                List<PIIEntity> detectedEntities, 
                                RedactionStrategy strategyUsed) {
+        this(originalText, redactedText, detectedEntities, strategyUsed, Locale.GENERIC);
+    }
+
+    /**
+     * Creates a new anonymization result with locale information.
+     *
+     * @param originalText The original text before redaction
+     * @param redactedText The redacted text
+     * @param detectedEntities List of detected PII entities
+     * @param strategyUsed The redaction strategy used
+     * @param locale The locale used for detection
+     */
+    public AnonymizationResult(String originalText, String redactedText, 
+                               List<PIIEntity> detectedEntities, 
+                               RedactionStrategy strategyUsed,
+                               Locale locale) {
         this.originalText = originalText;
         this.redactedText = redactedText;
         this.detectedEntities = detectedEntities;
         this.strategyUsed = strategyUsed;
+        this.locale = locale;
     }
 
     /**
@@ -58,6 +85,15 @@ public class AnonymizationResult {
      */
     public RedactionStrategy getStrategyUsed() {
         return strategyUsed;
+    }
+    
+    /**
+     * Gets the locale used for detection.
+     *
+     * @return The locale
+     */
+    public Locale getLocale() {
+        return locale;
     }
 
     /**

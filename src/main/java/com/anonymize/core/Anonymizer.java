@@ -1,5 +1,6 @@
 package com.anonymize.core;
 
+import com.anonymize.common.Locale;
 import com.anonymize.common.PIIEntity;
 import com.anonymize.detectors.Detector;
 import com.anonymize.strategies.MaskRedactor;
@@ -17,10 +18,12 @@ import java.util.List;
 public class Anonymizer {
     private final List<Detector> detectors;
     private final Redactor redactor;
+    private final Locale locale;
 
     private Anonymizer(Builder builder) {
         this.detectors = builder.detectors;
         this.redactor = builder.redactor;
+        this.locale = builder.locale;
     }
 
     /**
@@ -31,13 +34,18 @@ public class Anonymizer {
      */
     public AnonymizationResult anonymize(String text) {
         if (text == null || text.isEmpty()) {
-            return new AnonymizationResult("", "", new ArrayList<>(), redactor.getStrategy());
+            return new AnonymizationResult("", "", new ArrayList<>(), redactor.getStrategy(), locale);
         }
 
         List<PIIEntity> allEntities = new ArrayList<>();
         
         // Run all detectors to find PII entities
         for (Detector detector : detectors) {
+            // Skip detectors that don't support the current locale
+            if (!detector.supportsLocale(locale)) {
+                continue;
+            }
+            
             List<PIIEntity> entities = detector.detect(text);
             if (entities != null && !entities.isEmpty()) {
                 allEntities.addAll(entities);
@@ -47,7 +55,16 @@ public class Anonymizer {
         // Apply redaction strategy to the detected entities
         String redactedText = redactor.redact(text, allEntities);
         
-        return new AnonymizationResult(text, redactedText, allEntities, redactor.getStrategy());
+        return new AnonymizationResult(text, redactedText, allEntities, redactor.getStrategy(), locale);
+    }
+    
+    /**
+     * Gets the locale this anonymizer is configured for.
+     *
+     * @return The locale
+     */
+    public Locale getLocale() {
+        return locale;
     }
 
     /**
@@ -56,6 +73,7 @@ public class Anonymizer {
     public static class Builder {
         private final List<Detector> detectors = new ArrayList<>();
         private Redactor redactor = new MaskRedactor();
+        private Locale locale = Locale.GENERIC;
 
         /**
          * Adds a detector to the anonymizer.
@@ -116,6 +134,19 @@ public class Anonymizer {
         public Builder withRedactor(Redactor redactor) {
             if (redactor != null) {
                 this.redactor = redactor;
+            }
+            return this;
+        }
+        
+        /**
+         * Sets the locale to be used for detection.
+         *
+         * @param locale The locale to use
+         * @return The builder instance for method chaining
+         */
+        public Builder withLocale(Locale locale) {
+            if (locale != null) {
+                this.locale = locale;
             }
             return this;
         }

@@ -1,7 +1,9 @@
 package com.anonymize.detectors;
 
+import com.anonymize.common.Locale;
 import com.anonymize.common.PIIEntity;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Interface for all PII entity detectors.
@@ -21,4 +23,29 @@ public interface Detector {
      * @return The PII type this detector is focused on
      */
     String getType();
+    
+    /**
+     * Returns the set of locales supported by this detector.
+     *
+     * @return Set of supported locales
+     */
+    Set<Locale> getSupportedLocales();
+    
+    /**
+     * Checks if this detector supports the specified locale.
+     *
+     * @param locale The locale to check
+     * @return true if the locale is supported, false otherwise
+     */
+    default boolean supportsLocale(Locale locale) {
+        return getSupportedLocales().contains(locale) || 
+               getSupportedLocales().contains(Locale.GENERIC);
+    }
+    
+    /**
+     * Gets the locale this detector is configured for.
+     *
+     * @return The current locale
+     */
+    Locale getLocale();
 }
