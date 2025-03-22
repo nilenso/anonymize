@@ -1,0 +1,43 @@
+plugins {
+    id 'java-library'
+    id 'application'
+}
+
+group = 'com.anonymize'
+version = '0.1.0-SNAPSHOT'
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Core dependencies
+    implementation 'org.slf4j:slf4j-api:1.7.36'
+    implementation 'ch.qos.logback:logback-classic:1.2.11'
+    
+    // For YAML configuration
+    implementation 'org.yaml:snakeyaml:1.30'
+    
+    // NLP dependencies (will be optional in the future)
+    // implementation 'org.apache.opennlp:opennlp-tools:1.9.4'
+    
+    // For document format support (will be optional in the future)
+    // implementation 'org.apache.pdfbox:pdfbox:2.0.27'
+    // implementation 'org.apache.poi:poi:5.2.2'
+    // implementation 'org.apache.poi:poi-ooxml:5.2.2'
+    
+    // Testing
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// Main class for the CLI application
+application {
+    mainClass = 'com.anonymize.cli.AnonymizeCli'
+}
