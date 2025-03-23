@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
  * Base class for all detectors that use regular expressions to identify PII entities.
  * Provides a framework for locale-aware, extensible pattern matching.
  */
-public abstract class RegexDetector extends AbstractDetector {
+public abstract class BaseRegexDetector extends AbstractDetector {
     
     // Map of locale-specific patterns
     private final Map<Locale, List<String>> localePatterns = new HashMap<>();
@@ -23,7 +23,7 @@ public abstract class RegexDetector extends AbstractDetector {
     private final double defaultConfidence;
     
     /**
-     * Creates a new RegexDetector with the specified type, locale, supported locales, and confidence level.
+     * Creates a new BaseRegexDetector with the specified type, locale, supported locales, and confidence level.
      *
      * @param type The type of PII this detector handles
      * @param locale The locale this detector is configured for
@@ -31,7 +31,7 @@ public abstract class RegexDetector extends AbstractDetector {
      * @param defaultConfidence Default confidence level for detected entities
      * @param defaultPatterns Map of default patterns for different locales
      */
-    protected RegexDetector(String type, Locale locale, Set<Locale> supportedLocales,
+    protected BaseRegexDetector(String type, Locale locale, Set<Locale> supportedLocales,
                           double defaultConfidence, Map<Locale, List<String>> defaultPatterns) {
         super(type, locale, supportedLocales);
         this.defaultConfidence = defaultConfidence;
@@ -47,13 +47,13 @@ public abstract class RegexDetector extends AbstractDetector {
     }
     
     /**
-     * Creates a new RegexDetector with default locale (GENERIC).
+     * Creates a new BaseRegexDetector with default locale (GENERIC).
      *
      * @param type The type of PII this detector handles
      * @param defaultConfidence Default confidence level for detected entities
      * @param defaultPatterns Map of default patterns for different locales
      */
-    protected RegexDetector(String type, double defaultConfidence, Map<Locale, List<String>> defaultPatterns) {
+    protected BaseRegexDetector(String type, double defaultConfidence, Map<Locale, List<String>> defaultPatterns) {
         this(type, Locale.GENERIC, getSupportedLocalesFrom(defaultPatterns), defaultConfidence, defaultPatterns);
     }
     
@@ -175,7 +175,7 @@ public abstract class RegexDetector extends AbstractDetector {
      * @param pattern The regex pattern string to add
      * @return This detector instance for method chaining
      */
-    public RegexDetector addPattern(String pattern) {
+    public BaseRegexDetector addPattern(String pattern) {
         return addPattern(getLocale(), pattern);
     }
     
@@ -186,7 +186,7 @@ public abstract class RegexDetector extends AbstractDetector {
      * @param pattern The regex pattern string to add
      * @return This detector instance for method chaining
      */
-    public RegexDetector addPattern(Locale locale, String pattern) {
+    public BaseRegexDetector addPattern(Locale locale, String pattern) {
         if (pattern == null || pattern.trim().isEmpty()) {
             return this;
         }
@@ -210,7 +210,7 @@ public abstract class RegexDetector extends AbstractDetector {
      * @param patterns The list of regex pattern strings to add
      * @return This detector instance for method chaining
      */
-    public RegexDetector addPatterns(List<String> patterns) {
+    public BaseRegexDetector addPatterns(List<String> patterns) {
         return addPatterns(getLocale(), patterns);
     }
     
@@ -221,7 +221,7 @@ public abstract class RegexDetector extends AbstractDetector {
      * @param patterns The list of regex pattern strings to add
      * @return This detector instance for method chaining
      */
-    public RegexDetector addPatterns(Locale locale, List<String> patterns) {
+    public BaseRegexDetector addPatterns(Locale locale, List<String> patterns) {
         if (patterns == null || patterns.isEmpty()) {
             return this;
         }
@@ -245,7 +245,7 @@ public abstract class RegexDetector extends AbstractDetector {
      * @param locale The locale to clear patterns for
      * @return This detector instance for method chaining
      */
-    public RegexDetector clearPatterns(Locale locale) {
+    public BaseRegexDetector clearPatterns(Locale locale) {
         if (localePatterns.containsKey(locale)) {
             localePatterns.get(locale).clear();
             
@@ -263,7 +263,7 @@ public abstract class RegexDetector extends AbstractDetector {
      * @param patterns The new patterns to use
      * @return This detector instance for method chaining
      */
-    public RegexDetector setPatterns(Locale locale, List<String> patterns) {
+    public BaseRegexDetector setPatterns(Locale locale, List<String> patterns) {
         if (patterns == null) {
             return this;
         }
@@ -283,7 +283,7 @@ public abstract class RegexDetector extends AbstractDetector {
      * @param patterns The patterns for this locale
      * @return This detector instance for method chaining
      */
-    public RegexDetector addLocale(Locale locale, List<String> patterns) {
+    public BaseRegexDetector addLocale(Locale locale, List<String> patterns) {
         if (locale == null || patterns == null || patterns.isEmpty()) {
             return this;
         }

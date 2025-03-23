@@ -13,7 +13,7 @@ import java.util.Set;
  * Detector for email addresses using regex pattern matching.
  * Email format is generally consistent across locales, so this detector supports all locales.
  */
-public class EmailDetector extends RegexDetector {
+public class EmailDetector extends BaseRegexDetector {
     // Default confidence level for email matches
     private static final double DEFAULT_CONFIDENCE = 0.9;
     

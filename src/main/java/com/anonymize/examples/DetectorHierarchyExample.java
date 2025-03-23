@@ -5,9 +5,9 @@ import com.anonymize.common.PIIEntity;
 import com.anonymize.common.PIIType;
 import com.anonymize.core.AnonymizationResult;
 import com.anonymize.core.Anonymizer;
+import com.anonymize.detectors.BaseRegexDetector;
 import com.anonymize.detectors.EmailDetector;
 import com.anonymize.detectors.PhoneNumberDetector;
-import com.anonymize.detectors.RegexDetector;
 import com.anonymize.strategies.RedactionStrategy;
 
 import java.util.*;
@@ -85,9 +85,9 @@ public class DetectorHierarchyExample {
     }
     
     /**
-     * Example custom detector for credit card numbers extending RegexDetector.
+     * Example custom detector for credit card numbers extending BaseRegexDetector.
      */
-    static class CreditCardDetector extends RegexDetector {
+    static class CreditCardDetector extends BaseRegexDetector {
         private static final double DEFAULT_CONFIDENCE = 0.9;
         
         // Initialize pattern map for different card types

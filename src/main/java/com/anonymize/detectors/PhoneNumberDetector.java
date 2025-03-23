@@ -9,7 +9,7 @@ import java.util.*;
  * Detector for phone numbers using regex pattern matching.
  * Supports multiple locales with different phone formats.
  */
-public class PhoneNumberDetector extends RegexDetector {
+public class PhoneNumberDetector extends BaseRegexDetector {
     
     // Default confidence level for phone number matches
     private static final double DEFAULT_CONFIDENCE = 0.85;

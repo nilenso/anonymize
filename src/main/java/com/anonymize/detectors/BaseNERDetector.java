@@ -7,38 +7,38 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Base class for all detectors that use machine learning models to identify PII entities.
- * This is a placeholder for future ML-based detection capabilities.
+ * Base class for all detectors that use Named Entity Recognition (NER) models to identify PII entities.
+ * This provides a foundation for implementing machine learning-based detection capabilities.
  */
-public abstract class MLDetector extends AbstractDetector {
+public abstract class BaseNERDetector extends AbstractDetector {
     
     /**
-     * Creates a new MLDetector with the specified type, locale, and supported locales.
+     * Creates a new BaseNERDetector with the specified type, locale, and supported locales.
      *
      * @param type The type of PII this detector handles
      * @param locale The locale this detector is configured for
      * @param supportedLocales Set of locales supported by this detector
      */
-    protected MLDetector(String type, Locale locale, Set<Locale> supportedLocales) {
+    protected BaseNERDetector(String type, Locale locale, Set<Locale> supportedLocales) {
         super(type, locale, supportedLocales);
     }
     
     /**
-     * Creates a new MLDetector with the specified type and locale.
+     * Creates a new BaseNERDetector with the specified type and locale.
      *
      * @param type The type of PII this detector handles
      * @param locale The locale this detector is configured for
      */
-    protected MLDetector(String type, Locale locale) {
+    protected BaseNERDetector(String type, Locale locale) {
         super(type, locale);
     }
     
     /**
-     * Creates a new MLDetector with the specified type and the GENERIC locale.
+     * Creates a new BaseNERDetector with the specified type and the GENERIC locale.
      *
      * @param type The type of PII this detector handles
      */
-    protected MLDetector(String type) {
+    protected BaseNERDetector(String type) {
         super(type);
     }
     
