@@ -15,7 +15,10 @@ import java.util.regex.Pattern;
 public class PhoneNumberDetector extends AbstractDetector {
     
     // Map of locale-specific phone patterns
-    private static final Map<Locale, List<String>> LOCALE_PATTERNS = new HashMap<>();
+    private static final Map<Locale, List<String>> DEFAULT_LOCALE_PATTERNS = new HashMap<>();
+    
+    // Instance map that can be modified by users
+    private final Map<Locale, List<String>> localePatterns = new HashMap<>();
     
     static {
         // US phone patterns
@@ -27,7 +30,7 @@ public class PhoneNumberDetector extends AbstractDetector {
             "\\(\\d{3}\\)\\s+\\d{3}\\s+\\d{4}",   // (123) 456 7890
             "\\d{3}\\s+\\d{3}\\s+\\d{4}"          // 123 456 7890
         );
-        LOCALE_PATTERNS.put(Locale.US, usPatterns);
+        DEFAULT_LOCALE_PATTERNS.put(Locale.US, usPatterns);
         
         // UK phone patterns
         List<String> ukPatterns = Arrays.asList(
@@ -35,7 +38,7 @@ public class PhoneNumberDetector extends AbstractDetector {
             "\\(0\\d{3,4}\\)\\s?\\d{3,4}\\s?\\d{4}", // (0161) 999 8888
             "0\\d{3,4}[- ]?\\d{3,4}[- ]?\\d{4}"   // 01619998888 or 0161-999-8888
         );
-        LOCALE_PATTERNS.put(Locale.UK, ukPatterns);
+        DEFAULT_LOCALE_PATTERNS.put(Locale.UK, ukPatterns);
         
         // India phone patterns
         List<String> indiaPatterns = Arrays.asList(
@@ -43,10 +46,10 @@ public class PhoneNumberDetector extends AbstractDetector {
             "0\\d{10}",                           // 09999999999
             "\\d{5}[- ]?\\d{5}"                   // 99999 99999
         );
-        LOCALE_PATTERNS.put(Locale.INDIA, indiaPatterns);
+        DEFAULT_LOCALE_PATTERNS.put(Locale.INDIA, indiaPatterns);
         
         // Canada phone patterns (similar to US)
-        LOCALE_PATTERNS.put(Locale.CANADA, usPatterns);
+        DEFAULT_LOCALE_PATTERNS.put(Locale.CANADA, usPatterns);
         
         // Australia phone patterns
         List<String> auPatterns = Arrays.asList(
@@ -54,14 +57,14 @@ public class PhoneNumberDetector extends AbstractDetector {
             "0\\d{1}\\s?\\d{4}\\s?\\d{4}",        // 04 1234 5678
             "\\(0\\d{1}\\)\\s?\\d{4}\\s?\\d{4}"   // (04) 1234 5678
         );
-        LOCALE_PATTERNS.put(Locale.AUSTRALIA, auPatterns);
+        DEFAULT_LOCALE_PATTERNS.put(Locale.AUSTRALIA, auPatterns);
         
         // Generic international patterns
         List<String> genericPatterns = Arrays.asList(
             "\\+\\d{1,3}[- ]?\\d{3,14}",          // +XX XXXXXXXXXXXX
             "\\d{5,15}"                           // Basic digits-only pattern
         );
-        LOCALE_PATTERNS.put(Locale.GENERIC, genericPatterns);
+        DEFAULT_LOCALE_PATTERNS.put(Locale.GENERIC, genericPatterns);
         
         // EU patterns - combination of several European formats
         List<String> euPatterns = new ArrayList<>();
@@ -73,7 +76,7 @@ public class PhoneNumberDetector extends AbstractDetector {
         euPatterns.add("\\+39[- ]?\\d{2,4}[- ]?\\d{6,8}");
         // Spain
         euPatterns.add("\\+34[- ]?\\d{2}[- ]?\\d{3}[- ]?\\d{3}");
-        LOCALE_PATTERNS.put(Locale.EU, euPatterns);
+        DEFAULT_LOCALE_PATTERNS.put(Locale.EU, euPatterns);
     }
     
     private final List<Pattern> compiledPatterns = new ArrayList<>();
@@ -86,6 +89,10 @@ public class PhoneNumberDetector extends AbstractDetector {
      */
     public PhoneNumberDetector(Locale locale) {
         super(PIIType.PHONE_NUMBER.getValue(), locale, getSupportedLocalesStatic());
+        // Initialize with default patterns
+        for (Map.Entry<Locale, List<String>> entry : DEFAULT_LOCALE_PATTERNS.entrySet()) {
+            localePatterns.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        }
         initializePatterns();
     }
     
@@ -93,7 +100,28 @@ public class PhoneNumberDetector extends AbstractDetector {
      * Creates a PhoneNumberDetector with the GENERIC locale.
      */
     public PhoneNumberDetector() {
-        super(PIIType.PHONE_NUMBER.getValue(), Locale.GENERIC, getSupportedLocalesStatic());
+        this(Locale.GENERIC);
+    }
+    
+    /**
+     * Creates a PhoneNumberDetector with custom patterns for a specific locale.
+     *
+     * @param locale The locale to use
+     * @param patterns The custom patterns to use for this locale
+     */
+    public PhoneNumberDetector(Locale locale, List<String> patterns) {
+        super(PIIType.PHONE_NUMBER.getValue(), locale, getSupportedLocalesStatic());
+        
+        // Initialize with default patterns first
+        for (Map.Entry<Locale, List<String>> entry : DEFAULT_LOCALE_PATTERNS.entrySet()) {
+            localePatterns.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        }
+        
+        // Then override the specified locale with custom patterns
+        if (patterns != null && !patterns.isEmpty()) {
+            localePatterns.put(locale, new ArrayList<>(patterns));
+        }
+        
         initializePatterns();
     }
     
@@ -103,7 +131,146 @@ public class PhoneNumberDetector extends AbstractDetector {
      * @return Set of supported locales
      */
     private static Set<Locale> getSupportedLocalesStatic() {
-        return new HashSet<>(LOCALE_PATTERNS.keySet());
+        return new HashSet<>(DEFAULT_LOCALE_PATTERNS.keySet());
+    }
+    
+    /**
+     * Gets the currently supported locales for this detector instance.
+     * This includes both default locales and any custom locales added.
+     *
+     * @return Set of supported locales
+     */
+    public Set<Locale> getSupportedLocales() {
+        Set<Locale> supportedLocales = new HashSet<>(super.getSupportedLocales());
+        supportedLocales.addAll(localePatterns.keySet());
+        return supportedLocales;
+    }
+    
+    /**
+     * Add a custom pattern for the current locale.
+     *
+     * @param pattern The regex pattern string to add
+     * @return This detector instance for method chaining
+     */
+    public PhoneNumberDetector addPattern(String pattern) {
+        return addPattern(getLocale(), pattern);
+    }
+    
+    /**
+     * Add a custom pattern for a specific locale.
+     *
+     * @param locale The locale to add the pattern for
+     * @param pattern The regex pattern string to add
+     * @return This detector instance for method chaining
+     */
+    public PhoneNumberDetector addPattern(Locale locale, String pattern) {
+        if (pattern == null || pattern.trim().isEmpty()) {
+            return this;
+        }
+        
+        // Make sure the locale exists in our map
+        if (!localePatterns.containsKey(locale)) {
+            localePatterns.put(locale, new ArrayList<>());
+        }
+        
+        localePatterns.get(locale).add(pattern);
+        
+        // Reinitialize patterns since we've made changes
+        initializePatterns();
+        
+        return this;
+    }
+    
+    /**
+     * Add multiple custom patterns for the current locale.
+     *
+     * @param patterns The list of regex pattern strings to add
+     * @return This detector instance for method chaining
+     */
+    public PhoneNumberDetector addPatterns(List<String> patterns) {
+        return addPatterns(getLocale(), patterns);
+    }
+    
+    /**
+     * Add multiple custom patterns for a specific locale.
+     *
+     * @param locale The locale to add patterns for
+     * @param patterns The list of regex pattern strings to add
+     * @return This detector instance for method chaining
+     */
+    public PhoneNumberDetector addPatterns(Locale locale, List<String> patterns) {
+        if (patterns == null || patterns.isEmpty()) {
+            return this;
+        }
+        
+        // Make sure the locale exists in our map
+        if (!localePatterns.containsKey(locale)) {
+            localePatterns.put(locale, new ArrayList<>());
+        }
+        
+        localePatterns.get(locale).addAll(patterns);
+        
+        // Reinitialize patterns since we've made changes
+        initializePatterns();
+        
+        return this;
+    }
+    
+    /**
+     * Clear all patterns for a specific locale.
+     *
+     * @param locale The locale to clear patterns for
+     * @return This detector instance for method chaining
+     */
+    public PhoneNumberDetector clearPatterns(Locale locale) {
+        if (localePatterns.containsKey(locale)) {
+            localePatterns.get(locale).clear();
+            
+            // Reinitialize patterns since we've made changes
+            initializePatterns();
+        }
+        
+        return this;
+    }
+    
+    /**
+     * Replace all patterns for a specific locale.
+     *
+     * @param locale The locale to set patterns for
+     * @param patterns The new patterns to use
+     * @return This detector instance for method chaining
+     */
+    public PhoneNumberDetector setPatterns(Locale locale, List<String> patterns) {
+        if (patterns == null) {
+            return this;
+        }
+        
+        localePatterns.put(locale, new ArrayList<>(patterns));
+        
+        // Reinitialize patterns since we've made changes
+        initializePatterns();
+        
+        return this;
+    }
+    
+    /**
+     * Create a new locale with custom patterns.
+     *
+     * @param locale The new locale to create
+     * @param patterns The patterns for this locale
+     * @return This detector instance for method chaining
+     */
+    public PhoneNumberDetector addLocale(Locale locale, List<String> patterns) {
+        if (locale == null || patterns == null || patterns.isEmpty()) {
+            return this;
+        }
+        
+        localePatterns.put(locale, new ArrayList<>(patterns));
+        
+        // Reinitialize patterns since we've made changes
+        initializePatterns();
+        
+        return this;
     }
     
     /**
@@ -113,22 +280,52 @@ public class PhoneNumberDetector extends AbstractDetector {
         compiledPatterns.clear();
         
         // Add patterns for the current locale
-        List<String> localePatterns = LOCALE_PATTERNS.get(getLocale());
-        if (localePatterns != null) {
-            for (String pattern : localePatterns) {
-                compiledPatterns.add(Pattern.compile(pattern));
+        List<String> currentLocalePatterns = localePatterns.get(getLocale());
+        if (currentLocalePatterns != null) {
+            for (String pattern : currentLocalePatterns) {
+                try {
+                    compiledPatterns.add(Pattern.compile(pattern));
+                } catch (Exception e) {
+                    // Skip invalid patterns
+                    System.err.println("Invalid pattern: " + pattern + " - " + e.getMessage());
+                }
             }
         }
         
         // Also add generic patterns if not already using the GENERIC locale
         if (getLocale() != Locale.GENERIC) {
-            List<String> genericPatterns = LOCALE_PATTERNS.get(Locale.GENERIC);
+            List<String> genericPatterns = localePatterns.get(Locale.GENERIC);
             if (genericPatterns != null) {
                 for (String pattern : genericPatterns) {
-                    compiledPatterns.add(Pattern.compile(pattern));
+                    try {
+                        compiledPatterns.add(Pattern.compile(pattern));
+                    } catch (Exception e) {
+                        // Skip invalid patterns
+                        System.err.println("Invalid pattern: " + pattern + " - " + e.getMessage());
+                    }
                 }
             }
         }
+    }
+    
+    /**
+     * Gets the patterns for a specific locale.
+     *
+     * @param locale The locale to get patterns for
+     * @return List of pattern strings for the locale, or empty list if none exist
+     */
+    public List<String> getPatternsForLocale(Locale locale) {
+        List<String> patterns = localePatterns.get(locale);
+        return patterns != null ? new ArrayList<>(patterns) : new ArrayList<>();
+    }
+    
+    /**
+     * Gets all patterns for the current locale.
+     *
+     * @return List of pattern strings for the current locale
+     */
+    public List<String> getPatterns() {
+        return getPatternsForLocale(getLocale());
     }
 
     @Override
