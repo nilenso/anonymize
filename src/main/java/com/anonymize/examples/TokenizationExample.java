@@ -5,10 +5,10 @@ import com.anonymize.core.AnonymizationResult;
 import com.anonymize.core.Anonymizer;
 import com.anonymize.detectors.EmailDetector;
 import com.anonymize.detectors.PhoneNumberDetector;
-import com.anonymize.strategies.RedactionStrategy;
+import com.anonymize.strategies.TagAnonymizer;
 
 /**
- * Example demonstrating tokenization redaction strategy.
+ * Example demonstrating tokenization anonymization strategy.
  */
 public class TokenizationExample {
 
@@ -17,7 +17,7 @@ public class TokenizationExample {
         Anonymizer anonymizer = new Anonymizer.Builder()
                 .withDetector(new EmailDetector())
                 .withDetector(new PhoneNumberDetector())
-                .withRedactionStrategy(RedactionStrategy.TOKENIZE)
+                .withAnonymizerStrategy(new TagAnonymizer())
                 .build();
         
         // Example 1: Simple text
@@ -25,7 +25,7 @@ public class TokenizationExample {
         AnonymizationResult result1 = anonymizer.anonymize(text1);
         System.out.println("=== Example 1: Simple Text ===");
         System.out.println("Original: " + text1);
-        System.out.println("Tokenized: " + result1.getRedactedText());
+        System.out.println("Tokenized: " + result1.getAnonymizedText());
         System.out.println();
         
         // Example 2: Multiple instances of same type
@@ -33,7 +33,7 @@ public class TokenizationExample {
         AnonymizationResult result2 = anonymizer.anonymize(text2);
         System.out.println("=== Example 2: Multiple Instances of Same Type ===");
         System.out.println("Original: " + text2);
-        System.out.println("Tokenized: " + result2.getRedactedText());
+        System.out.println("Tokenized: " + result2.getAnonymizedText());
         System.out.println();
         
         // Example 3: Mixed types
@@ -41,7 +41,7 @@ public class TokenizationExample {
         AnonymizationResult result3 = anonymizer.anonymize(text3);
         System.out.println("=== Example 3: Mixed Types ===");
         System.out.println("Original: " + text3);
-        System.out.println("Tokenized: " + result3.getRedactedText());
+        System.out.println("Tokenized: " + result3.getAnonymizedText());
         
         // Display entity mapping for example 3
         System.out.println("\nEntity Mapping:");

@@ -7,12 +7,29 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Implements a redaction strategy that removes PII entities from the text entirely.
+ * Implements an anonymization strategy that replaces PII entities with a fixed mask.
  */
-public class RemoveRedactor implements Redactor {
+public class MaskAnonymizer implements AnonymizerStrategy {
+    private final String mask;
+
+    /**
+     * Creates a new MaskAnonymizer with the default mask.
+     */
+    public MaskAnonymizer() {
+        this("[REDACTED]");
+    }
+
+    /**
+     * Creates a new MaskAnonymizer with a custom mask.
+     *
+     * @param mask The mask to use for anonymization
+     */
+    public MaskAnonymizer(String mask) {
+        this.mask = mask;
+    }
 
     @Override
-    public String redact(String text, List<PIIEntity> entities) {
+    public String anonymize(String text, List<PIIEntity> entities) {
         if (text == null || text.isEmpty() || entities == null || entities.isEmpty()) {
             return text;
         }
@@ -24,14 +41,14 @@ public class RemoveRedactor implements Redactor {
 
         StringBuilder result = new StringBuilder(text);
         for (PIIEntity entity : sortedEntities) {
-            result.delete(entity.getStartPosition(), entity.getEndPosition());
+            result.replace(entity.getStartPosition(), entity.getEndPosition(), mask);
         }
 
         return result.toString();
     }
 
     @Override
-    public RedactionStrategy getStrategy() {
-        return RedactionStrategy.REMOVE;
+    public String getStrategyName() {
+        return "MASK";
     }
 }

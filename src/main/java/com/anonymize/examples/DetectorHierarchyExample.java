@@ -8,7 +8,8 @@ import com.anonymize.core.Anonymizer;
 import com.anonymize.detectors.BaseRegexDetector;
 import com.anonymize.detectors.EmailDetector;
 import com.anonymize.detectors.PhoneNumberDetector;
-import com.anonymize.strategies.RedactionStrategy;
+import com.anonymize.strategies.MaskAnonymizer;
+import com.anonymize.strategies.TagAnonymizer;
 
 import java.util.*;
 
@@ -26,7 +27,7 @@ public class DetectorHierarchyExample {
         Anonymizer defaultAnonymizer = new Anonymizer.Builder()
                 .withDetector(new EmailDetector())
                 .withDetector(new PhoneNumberDetector(Locale.US))
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .withLocale(Locale.US)
                 .build();
                 
@@ -34,7 +35,7 @@ public class DetectorHierarchyExample {
         
         AnonymizationResult result = defaultAnonymizer.anonymize(text);
         System.out.println("Original: " + text);
-        System.out.println("Redacted: " + result.getRedactedText());
+        System.out.println("Anonymized: " + result.getAnonymizedText());
         System.out.println("Detected entities: " + result.getDetectionCount());
         for (PIIEntity entity : result.getDetectedEntities()) {
             System.out.println("  - " + entity.getType() + ": " + entity.getText());
@@ -48,14 +49,14 @@ public class DetectorHierarchyExample {
         
         Anonymizer customAnonymizer = new Anonymizer.Builder()
                 .withDetector(ccDetector)
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .build();
                 
         String ccText = "Payment methods: VISA 4111-1111-1111-1111, AMEX 3714 496353 98431";
         
         AnonymizationResult ccResult = customAnonymizer.anonymize(ccText);
         System.out.println("Original: " + ccText);
-        System.out.println("Redacted: " + ccResult.getRedactedText());
+        System.out.println("Anonymized: " + ccResult.getAnonymizedText());
         System.out.println("Detected entities: " + ccResult.getDetectionCount());
         for (PIIEntity entity : ccResult.getDetectedEntities()) {
             System.out.println("  - " + entity.getType() + ": " + entity.getText() + 
@@ -69,7 +70,7 @@ public class DetectorHierarchyExample {
                 .withDetector(new EmailDetector())
                 .withDetector(new PhoneNumberDetector(Locale.US))
                 .withDetector(ccDetector)
-                .withRedactionStrategy(RedactionStrategy.TOKENIZE)
+                .withAnonymizerStrategy(new TagAnonymizer())
                 .build();
                 
         String combinedText = "Customer: john.doe@example.com, Phone: (555) 123-4567, " +
@@ -77,7 +78,7 @@ public class DetectorHierarchyExample {
                 
         AnonymizationResult combinedResult = combinedAnonymizer.anonymize(combinedText);
         System.out.println("Original: " + combinedText);
-        System.out.println("Redacted: " + combinedResult.getRedactedText());
+        System.out.println("Anonymized: " + combinedResult.getAnonymizedText());
         System.out.println("Detected entities: " + combinedResult.getDetectionCount());
         for (PIIEntity entity : combinedResult.getDetectedEntities()) {
             System.out.println("  - " + entity.getType() + ": " + entity.getText());

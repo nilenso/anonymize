@@ -6,36 +6,36 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Implements a redaction strategy that replaces PII entities with tokens like <TYPE_N>.
+ * Implements an anonymization strategy that replaces PII entities with tokens like <TYPE_N>.
  */
-public class TokenizeRedactor implements Redactor {
+public class TagAnonymizer implements AnonymizerStrategy {
     private final Map<String, Integer> typeCounters = new HashMap<>();
     private final String tokenFormat;
 
     /**
-     * Creates a new TokenizeRedactor with the default token format.
+     * Creates a new TokenizeAnonymizer with the default token format.
      */
-    public TokenizeRedactor() {
+    public TagAnonymizer() {
         this("<%s_%d>");
     }
 
     /**
-     * Creates a new TokenizeRedactor with a custom token format.
+     * Creates a new TokenizeAnonymizer with a custom token format.
      * Format should include %s for the type and %d for the counter.
      *
      * @param tokenFormat The format to use for tokens
      */
-    public TokenizeRedactor(String tokenFormat) {
+    public TagAnonymizer(String tokenFormat) {
         this.tokenFormat = tokenFormat;
     }
 
     @Override
-    public String redact(String text, List<PIIEntity> entities) {
+    public String anonymize(String text, List<PIIEntity> entities) {
         if (text == null || text.isEmpty() || entities == null || entities.isEmpty()) {
             return text;
         }
 
-        // Reset counters for consistent tokenization within one redaction operation
+        // Reset counters for consistent tokenization within one anonymization operation
         typeCounters.clear();
         
         // Sort entities by start position in reverse order to avoid offset issues when replacing
@@ -57,7 +57,7 @@ public class TokenizeRedactor implements Redactor {
     }
 
     @Override
-    public RedactionStrategy getStrategy() {
-        return RedactionStrategy.TOKENIZE;
+    public String getStrategyName() {
+        return "TOKENIZE";
     }
 }

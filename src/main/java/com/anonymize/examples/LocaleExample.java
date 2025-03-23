@@ -6,7 +6,7 @@ import com.anonymize.core.AnonymizationResult;
 import com.anonymize.core.Anonymizer;
 import com.anonymize.detectors.EmailDetector;
 import com.anonymize.detectors.PhoneNumberDetector;
-import com.anonymize.strategies.RedactionStrategy;
+import com.anonymize.strategies.MaskAnonymizer;
 
 /**
  * Example demonstrating locale-specific detection.
@@ -47,7 +47,7 @@ public class LocaleExample {
         Anonymizer anonymizer = new Anonymizer.Builder()
                 .withDetector(new EmailDetector(locale))
                 .withDetector(new PhoneNumberDetector(locale))
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .withLocale(locale)
                 .build();
                 
@@ -55,7 +55,7 @@ public class LocaleExample {
         
         System.out.println("Locale: " + locale.getDisplayName());
         System.out.println("Original: " + text);
-        System.out.println("Redacted: " + result.getRedactedText());
+        System.out.println("Anonymized: " + result.getAnonymizedText());
         System.out.println("Detected Entities: " + result.getDetectionCount());
         
         for (PIIEntity entity : result.getDetectedEntities()) {

@@ -2,57 +2,56 @@ package com.anonymize.core;
 
 import com.anonymize.common.Locale;
 import com.anonymize.common.PIIEntity;
-import com.anonymize.strategies.RedactionStrategy;
 
 import java.util.List;
 
 /**
- * Represents the result of an anonymization operation, including both the redacted text
+ * Represents the result of an anonymization operation, including both the anonymized text
  * and metadata about detected PII entities.
  */
 public class AnonymizationResult {
     private final String originalText;
-    private final String redactedText;
+    private final String anonymizedText;
     private final List<PIIEntity> detectedEntities;
-    private final RedactionStrategy strategyUsed;
+    private final String strategyUsed;
     private final Locale locale;
 
     /**
      * Creates a new anonymization result.
      *
-     * @param originalText The original text before redaction
-     * @param redactedText The redacted text
+     * @param originalText The original text before anonymization
+     * @param anonymizedText The anonymized text
      * @param detectedEntities List of detected PII entities
-     * @param strategyUsed The redaction strategy used
+     * @param strategyUsed The name of the anonymization strategy used
      */
-    public AnonymizationResult(String originalText, String redactedText, 
-                               List<PIIEntity> detectedEntities, 
-                               RedactionStrategy strategyUsed) {
-        this(originalText, redactedText, detectedEntities, strategyUsed, Locale.GENERIC);
+    public AnonymizationResult(String originalText, String anonymizedText, 
+                           List<PIIEntity> detectedEntities, 
+                           String strategyUsed) {
+        this(originalText, anonymizedText, detectedEntities, strategyUsed, Locale.GENERIC);
     }
 
     /**
      * Creates a new anonymization result with locale information.
      *
-     * @param originalText The original text before redaction
-     * @param redactedText The redacted text
+     * @param originalText The original text before anonymization
+     * @param anonymizedText The anonymized text
      * @param detectedEntities List of detected PII entities
-     * @param strategyUsed The redaction strategy used
+     * @param strategyUsed The name of the anonymization strategy used
      * @param locale The locale used for detection
      */
-    public AnonymizationResult(String originalText, String redactedText, 
-                               List<PIIEntity> detectedEntities, 
-                               RedactionStrategy strategyUsed,
-                               Locale locale) {
+    public AnonymizationResult(String originalText, String anonymizedText, 
+                           List<PIIEntity> detectedEntities, 
+                           String strategyUsed,
+                           Locale locale) {
         this.originalText = originalText;
-        this.redactedText = redactedText;
+        this.anonymizedText = anonymizedText;
         this.detectedEntities = detectedEntities;
         this.strategyUsed = strategyUsed;
         this.locale = locale;
     }
 
     /**
-     * Gets the original text before redaction.
+     * Gets the original text before anonymization.
      *
      * @return The original text
      */
@@ -61,12 +60,23 @@ public class AnonymizationResult {
     }
 
     /**
-     * Gets the redacted text after applying the redaction strategy.
+     * Gets the anonymized text after applying the anonymization strategy.
      *
-     * @return The redacted text
+     * @return The anonymized text
      */
+    public String getAnonymizedText() {
+        return anonymizedText;
+    }
+
+    /**
+     * Gets the redacted text (alias for getAnonymizedText() for backward compatibility).
+     * 
+     * @return The anonymized text
+     * @deprecated Use getAnonymizedText() instead
+     */
+    @Deprecated
     public String getRedactedText() {
-        return redactedText;
+        return anonymizedText;
     }
 
     /**
@@ -79,11 +89,11 @@ public class AnonymizationResult {
     }
 
     /**
-     * Gets the redaction strategy that was applied.
+     * Gets the anonymization strategy that was applied.
      *
-     * @return The redaction strategy used
+     * @return The name of the anonymization strategy used
      */
-    public RedactionStrategy getStrategyUsed() {
+    public String getStrategyUsed() {
         return strategyUsed;
     }
     

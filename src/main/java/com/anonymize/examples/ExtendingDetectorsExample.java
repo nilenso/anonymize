@@ -5,7 +5,7 @@ import com.anonymize.common.PIIEntity;
 import com.anonymize.core.AnonymizationResult;
 import com.anonymize.core.Anonymizer;
 import com.anonymize.detectors.PhoneNumberDetector;
-import com.anonymize.strategies.RedactionStrategy;
+import com.anonymize.strategies.MaskAnonymizer;
 
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class ExtendingDetectorsExample {
         // Create anonymizer with custom detector
         Anonymizer anonymizer = new Anonymizer.Builder()
                 .withDetector(customizedDetector)
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .withLocale(Locale.US)
                 .build();
                 
@@ -39,7 +39,7 @@ public class ExtendingDetectorsExample {
         
         System.out.println("Example 1: Adding a custom pattern for vanity numbers");
         System.out.println("Original: " + vanityText);
-        System.out.println("Redacted: " + result.getRedactedText());
+        System.out.println("Anonymized: " + result.getAnonymizedText());
         System.out.println("Detected entities: " + result.getDetectionCount());
         for (PIIEntity entity : result.getDetectedEntities()) {
             System.out.println("  - " + entity.getText());
@@ -67,13 +67,13 @@ public class ExtendingDetectorsExample {
         
         Anonymizer sgAnonymizer = new Anonymizer.Builder()
                 .withDetector(singaporeDetector)
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .build();
                 
         AnonymizationResult sgResult = sgAnonymizer.anonymize(singaporeText);
         
         System.out.println("Original: " + singaporeText);
-        System.out.println("Redacted: " + sgResult.getRedactedText());
+        System.out.println("Anonymized: " + sgResult.getAnonymizedText());
         System.out.println("Detected entities: " + sgResult.getDetectionCount());
         for (PIIEntity entity : sgResult.getDetectedEntities()) {
             System.out.println("  - " + entity.getText());
@@ -96,14 +96,14 @@ public class ExtendingDetectorsExample {
         
         Anonymizer ukAnonymizer = new Anonymizer.Builder()
                 .withDetector(customizedUKDetector)
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .withLocale(Locale.UK)
                 .build();
                 
         AnonymizationResult ukResult = ukAnonymizer.anonymize(ukText);
         
         System.out.println("Original: " + ukText);
-        System.out.println("Redacted: " + ukResult.getRedactedText());
+        System.out.println("Anonymized: " + ukResult.getAnonymizedText());
         System.out.println("Detected entities: " + ukResult.getDetectionCount());
         for (PIIEntity entity : ukResult.getDetectedEntities()) {
             System.out.println("  - " + entity.getText());
@@ -113,7 +113,7 @@ public class ExtendingDetectorsExample {
         PhoneNumberDetector standardUKDetector = new PhoneNumberDetector(Locale.UK);
         Anonymizer standardUKAnonymizer = new Anonymizer.Builder()
                 .withDetector(standardUKDetector)
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .withLocale(Locale.UK)
                 .build();
                 
@@ -121,7 +121,7 @@ public class ExtendingDetectorsExample {
         
         System.out.println("\nFor comparison, using default UK patterns:");
         System.out.println("Original: " + ukText);
-        System.out.println("Redacted: " + standardUKResult.getRedactedText());
+        System.out.println("Anonymized: " + standardUKResult.getAnonymizedText());
         System.out.println("Detected entities: " + standardUKResult.getDetectionCount());
         for (PIIEntity entity : standardUKResult.getDetectedEntities()) {
             System.out.println("  - " + entity.getText());
@@ -133,7 +133,7 @@ public class ExtendingDetectorsExample {
         CustomPhoneDetector customDetector = new CustomPhoneDetector();
         Anonymizer customAnonymizer = new Anonymizer.Builder()
                 .withDetector(customDetector)
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .build();
                 
         String mixedText = "Contact via US number 555-123-4567, UK number 07911123456, " +
@@ -142,7 +142,7 @@ public class ExtendingDetectorsExample {
         AnonymizationResult customResult = customAnonymizer.anonymize(mixedText);
         
         System.out.println("Original: " + mixedText);
-        System.out.println("Redacted: " + customResult.getRedactedText());
+        System.out.println("Anonymized: " + customResult.getAnonymizedText());
         System.out.println("Detected entities: " + customResult.getDetectionCount());
         for (PIIEntity entity : customResult.getDetectedEntities()) {
             System.out.println("  - " + entity.getText() + " (Confidence: " + entity.getConfidence() + ")");

@@ -5,7 +5,9 @@ import com.anonymize.core.AnonymizationResult;
 import com.anonymize.core.Anonymizer;
 import com.anonymize.detectors.EmailDetector;
 import com.anonymize.detectors.PhoneNumberDetector;
-import com.anonymize.strategies.RedactionStrategy;
+import com.anonymize.strategies.MaskAnonymizer;
+import com.anonymize.strategies.RemoveAnonymizer;
+import com.anonymize.strategies.TagAnonymizer;
 
 import java.util.Scanner;
 
@@ -15,13 +17,13 @@ import java.util.Scanner;
 public class AnonymizeCli {
 
     public static void main(String[] args) {
-        System.out.println("===== Anonymize - PII Detection and Redaction Tool =====");
+        System.out.println("===== Anonymize - PII Detection and Anonymization Tool =====");
         
         // Create an anonymizer with default detectors and strategy
         Anonymizer anonymizer = new Anonymizer.Builder()
                 .withDetector(new EmailDetector())
                 .withDetector(new PhoneNumberDetector())
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .build();
         
         Scanner scanner = new Scanner(System.in);
@@ -38,8 +40,8 @@ public class AnonymizeCli {
             AnonymizationResult result = anonymizer.anonymize(input);
             
             // Display results
-            System.out.println("\nRedacted Text:");
-            System.out.println(result.getRedactedText());
+            System.out.println("\nAnonymized Text:");
+            System.out.println(result.getAnonymizedText());
             
             if (result.hasDetectedEntities()) {
                 System.out.println("\nDetected PII Entities:");
@@ -60,34 +62,34 @@ public class AnonymizeCli {
     }
     
     /**
-     * Demonstrates the usage of different redaction strategies.
+     * Demonstrates the usage of different anonymization strategies.
      */
-    private static void demonstrateRedactionStrategies() {
+    private static void demonstrateAnonymizationStrategies() {
         String sampleText = "Contact John Doe at john.doe@example.com or call at (555) 123-4567.";
         
         // Create anonymizers with different strategies
         Anonymizer maskAnonymizer = new Anonymizer.Builder()
                 .withDetector(new EmailDetector())
                 .withDetector(new PhoneNumberDetector())
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .build();
                 
         Anonymizer removeAnonymizer = new Anonymizer.Builder()
                 .withDetector(new EmailDetector())
                 .withDetector(new PhoneNumberDetector())
-                .withRedactionStrategy(RedactionStrategy.REMOVE)
+                .withAnonymizerStrategy(new RemoveAnonymizer())
                 .build();
                 
         Anonymizer tokenizeAnonymizer = new Anonymizer.Builder()
                 .withDetector(new EmailDetector())
                 .withDetector(new PhoneNumberDetector())
-                .withRedactionStrategy(RedactionStrategy.TOKENIZE)
+                .withAnonymizerStrategy(new TagAnonymizer())
                 .build();
         
         // Display results with different strategies
         System.out.println("Original: " + sampleText);
-        System.out.println("Masked: " + maskAnonymizer.anonymize(sampleText).getRedactedText());
-        System.out.println("Removed: " + removeAnonymizer.anonymize(sampleText).getRedactedText());
-        System.out.println("Tokenized: " + tokenizeAnonymizer.anonymize(sampleText).getRedactedText());
+        System.out.println("Masked: " + maskAnonymizer.anonymize(sampleText).getAnonymizedText());
+        System.out.println("Removed: " + removeAnonymizer.anonymize(sampleText).getAnonymizedText());
+        System.out.println("Tokenized: " + tokenizeAnonymizer.anonymize(sampleText).getAnonymizedText());
     }
 }

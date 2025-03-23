@@ -4,7 +4,7 @@ import com.anonymize.common.PIIEntity;
 import com.anonymize.core.AnonymizationResult;
 import com.anonymize.core.Anonymizer;
 import com.anonymize.detectors.PhoneNumberDetector;
-import com.anonymize.strategies.RedactionStrategy;
+import com.anonymize.strategies.MaskAnonymizer;
 
 /**
  * Example demonstrating phone number detection with various formats.
@@ -15,7 +15,7 @@ public class PhoneDetectionExample {
         // Create an anonymizer with only phone number detection
         Anonymizer anonymizer = new Anonymizer.Builder()
                 .withDetector(new PhoneNumberDetector())
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .build();
         
         // Test various phone number formats
@@ -34,7 +34,7 @@ public class PhoneDetectionExample {
             AnonymizationResult result = anonymizer.anonymize(example);
             
             System.out.println("Original: " + example);
-            System.out.println("Redacted: " + result.getRedactedText());
+            System.out.println("Anonymized: " + result.getAnonymizedText());
             
             if (result.hasDetectedEntities()) {
                 System.out.println("Detected Entities:");

@@ -5,7 +5,9 @@ import com.anonymize.core.AnonymizationResult;
 import com.anonymize.core.Anonymizer;
 import com.anonymize.detectors.EmailDetector;
 import com.anonymize.detectors.PhoneNumberDetector;
-import com.anonymize.strategies.RedactionStrategy;
+import com.anonymize.strategies.MaskAnonymizer;
+import com.anonymize.strategies.RemoveAnonymizer;
+import com.anonymize.strategies.TagAnonymizer;
 
 /**
  * Simple example demonstrating the basic usage of the Anonymize library.
@@ -17,7 +19,7 @@ public class BasicExample {
         Anonymizer anonymizer = new Anonymizer.Builder()
                 .withDetector(new EmailDetector())
                 .withDetector(new PhoneNumberDetector())
-                .withRedactionStrategy(RedactionStrategy.MASK) // Default is MASK
+                .withAnonymizerStrategy(new MaskAnonymizer()) // Default is MaskAnonymizer
                 .build();
         
         // Sample text with PII
@@ -28,7 +30,7 @@ public class BasicExample {
         
         // Display results
         System.out.println("Original Text: " + result.getOriginalText());
-        System.out.println("Redacted Text: " + result.getRedactedText());
+        System.out.println("Anonymized Text: " + result.getAnonymizedText());
         System.out.println("Strategy Used: " + result.getStrategyUsed());
         System.out.println("Number of PII Entities Detected: " + result.getDetectionCount());
         
@@ -42,36 +44,36 @@ public class BasicExample {
             System.out.println();
         }
         
-        // Demonstrate different redaction strategies
-        demonstrateRedactionStrategies(text);
+        // Demonstrate different anonymization strategies
+        demonstrateAnonymizationStrategies(text);
     }
     
-    private static void demonstrateRedactionStrategies(String text) {
-        System.out.println("\n=== Different Redaction Strategies ===");
+    private static void demonstrateAnonymizationStrategies(String text) {
+        System.out.println("\n=== Different Anonymization Strategies ===");
         System.out.println("Original Text: " + text);
         
         // MASK strategy
         Anonymizer maskAnonymizer = new Anonymizer.Builder()
                 .withDetector(new EmailDetector())
                 .withDetector(new PhoneNumberDetector())
-                .withRedactionStrategy(RedactionStrategy.MASK)
+                .withAnonymizerStrategy(new MaskAnonymizer())
                 .build();
-        System.out.println("MASK: " + maskAnonymizer.anonymize(text).getRedactedText());
+        System.out.println("MASK: " + maskAnonymizer.anonymize(text).getAnonymizedText());
         
         // REMOVE strategy
         Anonymizer removeAnonymizer = new Anonymizer.Builder()
                 .withDetector(new EmailDetector())
                 .withDetector(new PhoneNumberDetector())
-                .withRedactionStrategy(RedactionStrategy.REMOVE)
+                .withAnonymizerStrategy(new RemoveAnonymizer())
                 .build();
-        System.out.println("REMOVE: " + removeAnonymizer.anonymize(text).getRedactedText());
+        System.out.println("REMOVE: " + removeAnonymizer.anonymize(text).getAnonymizedText());
         
         // TOKENIZE strategy
         Anonymizer tokenizeAnonymizer = new Anonymizer.Builder()
                 .withDetector(new EmailDetector())
                 .withDetector(new PhoneNumberDetector())
-                .withRedactionStrategy(RedactionStrategy.TOKENIZE)
+                .withAnonymizerStrategy(new TagAnonymizer())
                 .build();
-        System.out.println("TOKENIZE: " + tokenizeAnonymizer.anonymize(text).getRedactedText());
+        System.out.println("TOKENIZE: " + tokenizeAnonymizer.anonymize(text).getAnonymizedText());
     }
 }
