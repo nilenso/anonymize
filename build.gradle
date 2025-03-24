@@ -2,6 +2,7 @@ plugins {
     id 'java-library'
     id 'application'
     id 'com.github.johnrengelman.shadow' version '8.1.1'
+    id 'maven-publish'
 }
 
 group = 'com.anonymize'
@@ -71,7 +72,82 @@ task testAllJavaVersions {
     dependsOn testWithJava21
 }
 
-// For running examples, temporarily change the main class
+// For running command line interface
 application {
-    mainClass = 'com.anonymize.examples.NERDetectionExample'
+    mainClass = 'com.anonymize.cli.AnonymizeCli'
+}
+
+// Configure javadoc to include all packages
+javadoc {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    failOnError = false
+}
+
+// Create sources JAR
+task sourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    from sourceSets.main.allJava
+}
+
+// Create javadoc JAR
+task javadocJar(type: Jar) {
+    archiveClassifier.set('javadoc')
+    from javadoc.destinationDir
+    dependsOn javadoc
+}
+
+// Configure publishing
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            
+            artifact sourcesJar
+            artifact javadocJar
+            
+            pom {
+                name = 'Anonymize'
+                description = 'A library for detecting and anonymizing PII in text'
+                url = 'https://github.com/yourusername/anonymize'
+                
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                
+                developers {
+                    developer {
+                        id = 'developer-id'
+                        name = 'Developer Name'
+                        email = 'developer@example.com'
+                    }
+                }
+                
+                scm {
+                    connection = 'scm:git:git://github.com/yourusername/anonymize.git'
+                    developerConnection = 'scm:git:ssh://github.com/yourusername/anonymize.git'
+                    url = 'https://github.com/yourusername/anonymize'
+                }
+            }
+        }
+    }
+    
+    repositories {
+        maven {
+            name = 'localRepo'
+            url = layout.buildDirectory.dir("repo")
+        }
+        
+        // Uncomment to publish to Maven Central
+        // maven {
+        //     name = 'OSSRH'
+        //     url = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/'
+        //     credentials {
+        //         username = project.hasProperty('ossrhUsername') ? ossrhUsername : ''
+        //         password = project.hasProperty('ossrhPassword') ? ossrhPassword : ''
+        //     }
+        // }
+    }
 }
