@@ -1,12 +1,20 @@
 plugins {
     id 'java-library'
     id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 group = 'com.anonymize'
 version = '0.1.0-SNAPSHOT'
 sourceCompatibility = 11
 targetCompatibility = 11
+
+// Enable toolchain support for testing on different Java versions
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
 
 repositories {
     mavenCentral()
@@ -20,8 +28,11 @@ dependencies {
     // For YAML configuration
     implementation 'org.yaml:snakeyaml:1.30'
     
-    // NLP dependencies (will be optional in the future)
-    // implementation 'org.apache.opennlp:opennlp-tools:1.9.4'
+    // NLP dependencies
+    implementation 'org.apache.opennlp:opennlp-tools:1.9.4'
+    
+    // For model management
+    implementation 'commons-io:commons-io:2.15.1'
     
     // For document format support (will be optional in the future)
     // implementation 'org.apache.pdfbox:pdfbox:2.0.27'
@@ -37,7 +48,30 @@ test {
     useJUnitPlatform()
 }
 
-// Main class for the CLI application
+// Task to verify the project with Java 17
+task testWithJava17(type: Test) {
+    useJUnitPlatform()
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    })
+}
+
+// Task to verify the project with Java 21
+task testWithJava21(type: Test) {
+    useJUnitPlatform()
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    })
+}
+
+// Task to run tests on all supported Java versions
+task testAllJavaVersions {
+    dependsOn test
+    dependsOn testWithJava17
+    dependsOn testWithJava21
+}
+
+// For running examples, temporarily change the main class
 application {
-    mainClass = 'com.anonymize.cli.AnonymizeCli'
+    mainClass = 'com.anonymize.examples.NERDetectionExample'
 }

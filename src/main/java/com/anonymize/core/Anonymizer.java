@@ -63,6 +63,15 @@ public class Anonymizer {
     public Locale getLocale() {
         return locale;
     }
+    
+    /**
+     * Creates a new builder for configuring an Anonymizer instance.
+     *
+     * @return A new Builder instance
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
 
     /**
      * Builder for configuring and creating an Anonymizer instance.

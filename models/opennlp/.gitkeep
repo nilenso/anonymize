@@ -1,0 +1,2 @@
+# This directory is for holding OpenNLP model files
+# The actual model files (*.bin) are excluded from git via .gitignore
