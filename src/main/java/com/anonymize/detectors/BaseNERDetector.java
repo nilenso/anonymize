@@ -1,9 +1,6 @@
 package com.anonymize.detectors;
 
 import com.anonymize.common.Locale;
-import com.anonymize.common.PIIEntity;
-
-import java.util.List;
 import java.util.Set;
 
 /**

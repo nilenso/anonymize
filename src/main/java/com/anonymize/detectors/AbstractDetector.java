@@ -2,7 +2,6 @@ package com.anonymize.detectors;
 
 import com.anonymize.common.Locale;
 import com.anonymize.common.PIIEntity;
-import com.anonymize.common.PIIType;
 
 import java.util.Collections;
 import java.util.HashSet;

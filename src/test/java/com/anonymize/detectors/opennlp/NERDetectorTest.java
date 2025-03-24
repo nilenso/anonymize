@@ -8,7 +8,6 @@ import com.anonymize.core.Anonymizer;
 import com.anonymize.strategies.MaskAnonymizer;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 
 import java.io.File;
 import java.util.List;
@@ -17,9 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests for OpenNLP-based Named Entity Recognition (NER) detectors.
- * These tests are conditional and will be skipped if models aren't available.
  */
-@EnabledIfSystemProperty(named = "test.opennlp", matches = "true")
 public class NERDetectorTest {
 
     private static ModelManager modelManager;
