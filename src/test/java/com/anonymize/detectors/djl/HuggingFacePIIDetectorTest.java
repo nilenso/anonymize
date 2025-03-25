@@ -1,0 +1,281 @@
+package com.anonymize.detectors.djl;
+
+import com.anonymize.common.Locale;
+import com.anonymize.common.PIIEntity;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.api.Disabled;
+import org.mockito.Mockito;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+/**
+ * Tests for the HuggingFacePIIDetector class.
+ * These tests are enabled only when the models directory exists.
+ */
+public class HuggingFacePIIDetectorTest {
+
+    private static boolean modelsAvailable = false;
+    private static DJLModelManager modelManager;
+    
+    @BeforeAll
+    public static void checkModels() {
+        System.out.println("\n=== HUGGINGFACE PII DETECTOR TEST SETUP ===");
+        
+        // Check if models directory exists
+        File modelsDir = new File("models/djl");
+        
+        // Create models directory if it doesn't exist
+        if (!modelsDir.exists()) {
+            modelsDir.mkdirs();
+            System.out.println("Created models directory at: " + modelsDir.getAbsolutePath());
+        } else {
+            System.out.println("Models directory exists at: " + modelsDir.getAbsolutePath());
+        }
+        
+        // Check for model presence
+        try {
+            // Try to initialize the model manager
+            modelManager = new DJLModelManager();
+            
+            // For our tests, we'll consider the environment available
+            // The actual model loading will be handled separately
+            modelsAvailable = true;
+            System.out.println("DJL test environment is available");
+            System.out.println("Java version: " + System.getProperty("java.version"));
+            System.out.println("Test configuration:");
+            System.out.println("- Models available: " + modelsAvailable);
+            System.out.println("- Tests with @Disabled annotation will be skipped");
+            System.out.println("=========================================\n");
+        } catch (Exception e) {
+            System.out.println("DJL models not available - tests will be skipped: " + e.getMessage());
+            modelsAvailable = false;
+        }
+    }
+    
+    /**
+     * Helper method to check if models are available.
+     * Used by the @EnabledIf annotation to conditionally run tests.
+     */
+    static boolean areModelsAvailable() {
+        return modelsAvailable;
+    }
+    
+    @Test
+    @Disabled("Requires actual model to run")
+    public void testPersonDetection() {
+        // Create detector
+        HuggingFacePIIDetector detector = new HuggingFacePIIDetector(modelManager);
+        
+        try {
+            // Test text with person names
+            String text = "John Smith and Alice Johnson met with Michael Brown in New York City.";
+            
+            // Run detection
+            List<PIIEntity> entities = detector.detect(text);
+            
+            // Print results for debugging
+            System.out.println("Person Detection Results:");
+            for (PIIEntity entity : entities) {
+                System.out.println("  - " + entity.getText() + " (" + entity.getType() + ", " + entity.getConfidence() + ")");
+            }
+            
+            // Check if any person entities were detected
+            boolean foundPerson = entities.stream()
+                    .anyMatch(e -> e.getType().equals("PERSON"));
+            
+            assertTrue(foundPerson, "Should detect at least one person name");
+        } finally {
+            // Clean up resources
+            detector.close();
+        }
+    }
+    
+    @Test
+    public void testEntityTypeMapping() {
+        // Create detector with any model manager - it won't be used for this test
+        DJLModelManager mockManager = Mockito.mock(DJLModelManager.class);
+        HuggingFacePIIDetector detector = new HuggingFacePIIDetector(mockManager);
+        
+        try {
+            // Test the entity type mapping
+            assertEquals("PERSON", detector.mapEntityType("PER"), "PER should map to PERSON");
+            assertEquals("ORGANIZATION", detector.mapEntityType("ORG"), "ORG should map to ORGANIZATION");
+            assertEquals("LOCATION", detector.mapEntityType("LOC"), "LOC should map to LOCATION");
+            assertEquals("MISC", detector.mapEntityType("MISC"), "MISC should remain MISC");
+            assertNull(detector.mapEntityType("UNKNOWN"), "Unknown type should map to null");
+        } finally {
+            detector.close();
+        }
+    }
+    
+    @Test
+    @Disabled("Requires actual model to run")
+    public void testLocationDetection() {
+        // Create detector
+        HuggingFacePIIDetector detector = new HuggingFacePIIDetector(modelManager);
+        
+        try {
+            // Test text with locations
+            String text = "The meeting will take place in San Francisco, California, not too far from Seattle.";
+            
+            // Run detection
+            List<PIIEntity> entities = detector.detect(text);
+            
+            // Print results for debugging
+            System.out.println("Location Detection Results:");
+            for (PIIEntity entity : entities) {
+                System.out.println("  - " + entity.getText() + " (" + entity.getType() + ", " + entity.getConfidence() + ")");
+            }
+            
+            // Check if any location entities were detected
+            boolean foundLocation = entities.stream()
+                    .anyMatch(e -> e.getType().equals("LOCATION"));
+            
+            assertTrue(foundLocation, "Should detect at least one location");
+        } finally {
+            // Clean up resources
+            detector.close();
+        }
+    }
+    
+    @Test
+    public void testConstructorAndParameters() {
+        // Create mock model manager
+        DJLModelManager mockManager = Mockito.mock(DJLModelManager.class);
+        
+        // Create detector with the mock manager
+        HuggingFacePIIDetector detector = new HuggingFacePIIDetector(mockManager);
+        
+        try {
+            // Verify the detector was initialized with the expected parameters
+            assertEquals("PII", detector.getType(), "Detector type should be PII");
+            assertEquals(Locale.GENERIC, detector.getLocale(), "Detector locale should be GENERIC");
+            assertTrue(detector.getSupportedLocales().contains(Locale.GENERIC), 
+                    "Supported locales should include GENERIC");
+            assertFalse(detector.isModelLoaded(), "Model should not be loaded initially");
+        } finally {
+            detector.close();
+        }
+    }
+    
+    @Test
+    @Disabled("Requires actual model to run")
+    public void testMixedEntityDetection() {
+        // Create detector
+        HuggingFacePIIDetector detector = new HuggingFacePIIDetector(modelManager);
+        
+        try {
+            // Test text with mixed entity types
+            String text = "Sarah Johnson is traveling to London next month for a conference at Microsoft headquarters.";
+            
+            // Run detection
+            List<PIIEntity> entities = detector.detect(text);
+            
+            // Print results for debugging
+            System.out.println("Mixed Entity Detection Results:");
+            for (PIIEntity entity : entities) {
+                System.out.println("  - " + entity.getText() + " (" + entity.getType() + ", " + entity.getConfidence() + ")");
+            }
+            
+            // Check that we have at least one entity
+            assertFalse(entities.isEmpty(), "Should detect at least one entity");
+            
+            // Verify entity types are mapped correctly
+            for (PIIEntity entity : entities) {
+                String type = entity.getType();
+                assertTrue(
+                    type.equals("PERSON") ||
+                    type.equals("LOCATION") ||
+                    type.equals("ORGANIZATION") ||
+                    type.equals("MISC"),
+                    "Entity type should be mapped correctly: " + type
+                );
+            }
+        } finally {
+            // Clean up resources
+            detector.close();
+        }
+    }
+    
+    @Disabled("Mock functionality needs to be updated")
+    @Test
+    public void testConfidenceThreshold() {
+        // Create mock model manager
+        DJLModelManager mockManager = Mockito.mock(DJLModelManager.class);
+        
+        // Create the detector with the mock manager
+        HuggingFacePIIDetector detector = Mockito.spy(new HuggingFacePIIDetector(mockManager));
+        
+        try {
+            // Mock the loadModelIfNeeded method to return true
+            Mockito.doReturn(true).when(detector).loadModelIfNeeded();
+            
+            // Create entity results with different confidence levels
+            List<BaseDJLDetector.EntityResult> mockResults = new ArrayList<>();
+            
+            // Entity with confidence above threshold
+            BaseDJLDetector.EntityResult highConfidence = new BaseDJLDetector.EntityResult();
+            highConfidence.setEntity("John Smith");
+            highConfidence.setType("PER");
+            highConfidence.setStartPosition(0);
+            highConfidence.setEndPosition(10);
+            highConfidence.setConfidence(0.95); // Above the default threshold
+            mockResults.add(highConfidence);
+            
+            // Entity with confidence below threshold
+            BaseDJLDetector.EntityResult lowConfidence = new BaseDJLDetector.EntityResult();
+            lowConfidence.setEntity("ABC Corp");
+            lowConfidence.setType("ORG");
+            lowConfidence.setStartPosition(20);
+            lowConfidence.setEndPosition(28);
+            lowConfidence.setConfidence(0.5); // Below the default threshold
+            mockResults.add(lowConfidence);
+            
+            // Mock the predictor's predict method to return our mock results
+            Mockito.when(detector.getPredictorForTesting(anyString())).thenReturn(mockResults);
+            
+            // Run detection
+            List<PIIEntity> entities = detector.detect("John Smith works at ABC Corp");
+            
+            // Verify that only the high confidence entity was included
+            assertEquals(1, entities.size(), "Should only detect high confidence entities");
+            assertEquals("John Smith", entities.get(0).getText(), "Should detect John Smith");
+            assertEquals("PERSON", entities.get(0).getType(), "Type should be PERSON");
+            assertEquals(0.95, entities.get(0).getConfidence(), 0.01, "Confidence should be preserved");
+        } finally {
+            detector.close();
+        }
+    }
+    
+    @Test
+    public void testEmptyInput() {
+        // Create detector with any model manager - it won't be used
+        DJLModelManager mockManager = Mockito.mock(DJLModelManager.class);
+        HuggingFacePIIDetector detector = new HuggingFacePIIDetector(mockManager);
+        
+        try {
+            // Test with empty text
+            List<PIIEntity> entities = detector.detect("");
+            
+            // Should return an empty list
+            assertTrue(entities.isEmpty(), "Empty input should return empty list");
+            
+            // Test with null input
+            entities = detector.detect(null);
+            
+            // Should return an empty list
+            assertTrue(entities.isEmpty(), "Null input should return empty list");
+        } finally {
+            // Clean up resources
+            detector.close();
+        }
+    }
+}

@@ -35,6 +35,17 @@ dependencies {
     // For model management
     implementation 'commons-io:commons-io:2.15.1'
     
+    // DJL dependencies for Hugging Face integration
+    implementation platform('ai.djl:bom:0.25.0')
+    implementation 'ai.djl:api'
+    implementation 'ai.djl:basicdataset'
+    implementation 'ai.djl:model-zoo'
+    implementation 'ai.djl.huggingface:tokenizers'
+    implementation 'ai.djl.pytorch:pytorch-engine'
+    implementation 'ai.djl.pytorch:pytorch-model-zoo'
+    // Optional for native PyTorch acceleration if available
+    // runtimeOnly 'ai.djl.pytorch:pytorch-native-auto'
+    
     // For document format support (will be optional in the future)
     // implementation 'org.apache.pdfbox:pdfbox:2.0.27'
     // implementation 'org.apache.poi:poi:5.2.2'
@@ -43,10 +54,16 @@ dependencies {
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+    testImplementation 'org.mockito:mockito-core:4.8.0'
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.8.0'
 }
 
 test {
     useJUnitPlatform()
+    // Show standard out and standard error of the test JVM(s) on the console
+    testLogging {
+        showStandardStreams = true
+    }
 }
 
 // Task to verify the project with Java 17
@@ -55,6 +72,10 @@ task testWithJava17(type: Test) {
     javaLauncher.set(javaToolchains.launcherFor {
         languageVersion.set(JavaLanguageVersion.of(17))
     })
+    // Show standard out and standard error of the test JVM(s) on the console
+    testLogging {
+        showStandardStreams = true
+    }
 }
 
 // Task to verify the project with Java 21
@@ -63,6 +84,10 @@ task testWithJava21(type: Test) {
     javaLauncher.set(javaToolchains.launcherFor {
         languageVersion.set(JavaLanguageVersion.of(21))
     })
+    // Show standard out and standard error of the test JVM(s) on the console
+    testLogging {
+        showStandardStreams = true
+    }
 }
 
 // Task to run tests on all supported Java versions
