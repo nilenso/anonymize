@@ -77,6 +77,46 @@ public class DJLModelManager {
     }
     
     /**
+     * Ensures a specific model is downloaded and available for testing.
+     * This is primarily used in test environments to make sure the model
+     * is available before running tests.
+     * 
+     * @param modelId The model ID to download
+     * @return true if the model is available (either already downloaded or downloaded successfully),
+     *         false otherwise
+     */
+    public boolean ensureModelDownloaded(String modelId) {
+        logger.info("Ensuring model is downloaded: {}", modelId);
+        
+        // If model is already loaded or cached, it's available
+        if (modelCache.containsKey(modelId)) {
+            logger.info("Model already loaded in cache: {}", modelId);
+            return true;
+        }
+        
+        // If model is locally available in the repository, it's available
+        if (isModelAvailable(modelId)) {
+            logger.info("Model already available locally: {}", modelId);
+            return true;
+        }
+        
+        // Try to download and load the model
+        try {
+            logger.info("Attempting to download model: {}", modelId);
+            @SuppressWarnings("rawtypes")
+            ZooModel model = loadModel(modelId);
+            // Close the model after loading - we just want to ensure it's downloaded
+            model.close();
+            modelCache.remove(modelId);
+            logger.info("Successfully downloaded model: {}", modelId);
+            return true;
+        } catch (ModelNotFoundException | MalformedModelException | IOException e) {
+            logger.error("Failed to download model {}: {}", modelId, e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
      * Loads a DJL model by its ID.
      * 
      * @param modelId The model ID (corresponds to a Hugging Face model ID or a local model)
@@ -100,10 +140,14 @@ public class DJLModelManager {
         logger.info("Loading DJL model: {}", modelId);
         
         // Build criteria for the model
+        @SuppressWarnings("rawtypes")
         Criteria.Builder criteriaBuilder = Criteria.builder();
+                
         criteriaBuilder.optApplication(Application.NLP.TEXT_CLASSIFICATION)
                 .optProgress(new ProgressBar())
-                .optArtifactId(modelId);
+                .optArtifactId(modelId)
+                .optEngine("PyTorch") // Specify PyTorch for DJL
+                .optOption("mapLocation", "cpu"); // Use CPU for inference
         
         // Use modelUrl to determine if local or remote
         if (new File(modelUrl).exists() || modelUrl.startsWith("file:")) {

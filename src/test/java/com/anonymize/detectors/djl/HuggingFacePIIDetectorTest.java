@@ -40,22 +40,33 @@ public class HuggingFacePIIDetectorTest {
             System.out.println("Models directory exists at: " + modelsDir.getAbsolutePath());
         }
         
-        // Check for model presence
+        // Try to initialize the model manager and download required models
         try {
-            // Try to initialize the model manager
+            System.out.println("Initializing DJL model manager...");
             modelManager = new DJLModelManager();
             
-            // For our tests, we'll consider the environment available
-            // The actual model loading will be handled separately
-            modelsAvailable = true;
-            System.out.println("DJL test environment is available");
+            // Attempt to download the NER model needed for tests
+            String modelId = "ner-bert-base";
+            System.out.println("Checking/downloading model: " + modelId);
+            boolean modelDownloaded = modelManager.ensureModelDownloaded(modelId);
+            
+            if (modelDownloaded) {
+                System.out.println("✓ Model successfully downloaded/available: " + modelId);
+                modelsAvailable = true;
+            } else {
+                System.out.println("✗ Failed to download model: " + modelId);
+                modelsAvailable = false;
+            }
+            
+            System.out.println("DJL test environment setup complete");
             System.out.println("Java version: " + System.getProperty("java.version"));
             System.out.println("Test configuration:");
             System.out.println("- Models available: " + modelsAvailable);
-            System.out.println("- Tests with @Disabled annotation will be skipped");
+            System.out.println("- Tests requiring models will " + (modelsAvailable ? "run" : "be skipped"));
             System.out.println("=========================================\n");
         } catch (Exception e) {
-            System.out.println("DJL models not available - tests will be skipped: " + e.getMessage());
+            System.out.println("DJL setup failed - tests will be skipped: " + e.getMessage());
+            e.printStackTrace(System.out);
             modelsAvailable = false;
         }
     }
@@ -69,22 +80,27 @@ public class HuggingFacePIIDetectorTest {
     }
     
     @Test
-    @Disabled("Requires actual model to run")
+    @EnabledIf("areModelsAvailable")
     public void testPersonDetection() {
-        // Create detector
+        // Create detector with the shared model manager
         HuggingFacePIIDetector detector = new HuggingFacePIIDetector(modelManager);
         
         try {
             // Test text with person names
             String text = "John Smith and Alice Johnson met with Michael Brown in New York City.";
+            System.out.println("\nRunning person detection test with text: '" + text + "'");
             
             // Run detection
             List<PIIEntity> entities = detector.detect(text);
             
             // Print results for debugging
             System.out.println("Person Detection Results:");
-            for (PIIEntity entity : entities) {
-                System.out.println("  - " + entity.getText() + " (" + entity.getType() + ", " + entity.getConfidence() + ")");
+            if (entities.isEmpty()) {
+                System.out.println("  No entities detected");
+            } else {
+                for (PIIEntity entity : entities) {
+                    System.out.println("  - " + entity.getText() + " (" + entity.getType() + ", " + entity.getConfidence() + ")");
+                }
             }
             
             // Check if any person entities were detected
@@ -117,22 +133,27 @@ public class HuggingFacePIIDetectorTest {
     }
     
     @Test
-    @Disabled("Requires actual model to run")
+    @EnabledIf("areModelsAvailable")
     public void testLocationDetection() {
-        // Create detector
+        // Create detector with the shared model manager
         HuggingFacePIIDetector detector = new HuggingFacePIIDetector(modelManager);
         
         try {
             // Test text with locations
             String text = "The meeting will take place in San Francisco, California, not too far from Seattle.";
+            System.out.println("\nRunning location detection test with text: '" + text + "'");
             
             // Run detection
             List<PIIEntity> entities = detector.detect(text);
             
             // Print results for debugging
             System.out.println("Location Detection Results:");
-            for (PIIEntity entity : entities) {
-                System.out.println("  - " + entity.getText() + " (" + entity.getType() + ", " + entity.getConfidence() + ")");
+            if (entities.isEmpty()) {
+                System.out.println("  No entities detected");
+            } else {
+                for (PIIEntity entity : entities) {
+                    System.out.println("  - " + entity.getText() + " (" + entity.getType() + ", " + entity.getConfidence() + ")");
+                }
             }
             
             // Check if any location entities were detected
@@ -167,22 +188,27 @@ public class HuggingFacePIIDetectorTest {
     }
     
     @Test
-    @Disabled("Requires actual model to run")
+    @EnabledIf("areModelsAvailable")
     public void testMixedEntityDetection() {
-        // Create detector
+        // Create detector with the shared model manager
         HuggingFacePIIDetector detector = new HuggingFacePIIDetector(modelManager);
         
         try {
             // Test text with mixed entity types
             String text = "Sarah Johnson is traveling to London next month for a conference at Microsoft headquarters.";
+            System.out.println("\nRunning mixed entity detection test with text: '" + text + "'");
             
             // Run detection
             List<PIIEntity> entities = detector.detect(text);
             
             // Print results for debugging
             System.out.println("Mixed Entity Detection Results:");
-            for (PIIEntity entity : entities) {
-                System.out.println("  - " + entity.getText() + " (" + entity.getType() + ", " + entity.getConfidence() + ")");
+            if (entities.isEmpty()) {
+                System.out.println("  No entities detected");
+            } else {
+                for (PIIEntity entity : entities) {
+                    System.out.println("  - " + entity.getText() + " (" + entity.getType() + ", " + entity.getConfidence() + ")");
+                }
             }
             
             // Check that we have at least one entity
