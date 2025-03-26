@@ -117,4 +117,16 @@ public class PersonNameDetector extends OpenNLPNERDetector {
         // Add other supported locales
         return locales;
     }
+    
+    /**
+     * Specializes the entity type mapping for person detection.
+     * This ensures any entity detected by this model is mapped to PERSON_NAME.
+     * 
+     * @param modelEntityType The entity type from the model
+     * @return Always returns PIIType.PERSON_NAME
+     */
+    @Override
+    protected PIIType mapEntityType(String modelEntityType) {
+        return PIIType.PERSON_NAME;
+    }
 }

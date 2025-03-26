@@ -207,6 +207,38 @@ public abstract class OpenNLPNERDetector extends BaseNERDetector {
      */
     protected abstract String getModelPath();
 
+    /**
+     * Maps the model's entity type to the PIIType used by the anonymization library.
+     * This method should be overridden by subclasses that want more specific mapping.
+     * 
+     * @param modelEntityType The entity type from the model
+     * @return The corresponding PIIType value
+     */
+    protected PIIType mapEntityType(String modelEntityType) {
+        if (modelEntityType == null) {
+            return PIIType.MISC;
+        }
+        
+        switch (modelEntityType.toLowerCase()) {
+            case "person":
+                return PIIType.PERSON_NAME;
+            case "location":
+                return PIIType.LOCATION;
+            case "organization":
+                return PIIType.ORGANIZATION;
+            case "date":
+                return PIIType.DATE_OF_BIRTH;
+            case "time":
+                return PIIType.DATE_OF_BIRTH;
+            case "money":
+            case "percent":
+            case "number":
+                return PIIType.MISC;
+            default:
+                return PIIType.MISC;
+        }
+    }
+
     @Override
     public List<PIIEntity> detect(String text) {
         if (text == null || text.isEmpty()) {
@@ -268,8 +300,11 @@ public abstract class OpenNLPNERDetector extends BaseNERDetector {
                 // Extract the exact entity text from the original
                 String entityText = text.substring(startPos, endPos);
                 
+                // Map the entity type to a PIIType
+                PIIType entityType = mapEntityType(span.getType());
+                
                 // Create and add the entity
-                entities.add(new PIIEntity(PIIType.MISC,startPos, endPos, entityText, confidence));
+                entities.add(new PIIEntity(entityType, startPos, endPos, entityText, confidence));
             }
             
             // Clear adaptive data from the name finder to prepare for the next call

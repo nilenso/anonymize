@@ -117,4 +117,16 @@ public class LocationDetector extends OpenNLPNERDetector {
         // Add other supported locales
         return locales;
     }
+    
+    /**
+     * Specializes the entity type mapping for location detection.
+     * This ensures any entity detected by this model is mapped to LOCATION.
+     * 
+     * @param modelEntityType The entity type from the model
+     * @return Always returns PIIType.LOCATION
+     */
+    @Override
+    protected PIIType mapEntityType(String modelEntityType) {
+        return PIIType.LOCATION;
+    }
 }
