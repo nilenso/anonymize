@@ -3,6 +3,9 @@ package com.anonymize.detectors.djl;
 import com.anonymize.common.Locale;
 import com.anonymize.common.PIIEntity;
 import com.anonymize.common.PIIType;
+
+import ai.djl.modality.nlp.translator.NamedEntity;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -219,7 +222,7 @@ public class HuggingFacePIIDetectorTest {
             for (PIIEntity entity : entities) {
                 String type = entity.getType().getValue();
                 assertTrue(
-                    type.equals("PERSON") ||
+                    type.equals("PERSON_NAME") ||
                     type.equals("LOCATION") ||
                     type.equals("ORGANIZATION") ||
                     type.equals("MISC"),
@@ -304,5 +307,81 @@ public class HuggingFacePIIDetectorTest {
             // Clean up resources
             detector.close();
         }
+    }
+    
+    @Test
+    public void testProcessNamedEntitiesWithMultiTokens() {
+        // Create mock named entities with multi-token examples
+        // Simulate what would be returned from the DJL model for a sentence like:
+        // "John Smith works at Google Inc in New York City"
+        
+        NamedEntity[] mockEntities = new ai.djl.modality.nlp.translator.NamedEntity[] {
+            // Person name - multi-token
+            createNamedEntity("B-PER", "John", 0, 4, 0.95f),
+            createNamedEntity("I-PER", "Smith", 5, 10, 0.93f),
+            
+            // Skip "works at" (would be "O" label)
+            
+            // Organization - multi-token
+            createNamedEntity("B-ORG", "Google", 18, 24, 0.90f),
+            createNamedEntity("I-ORG", "Inc", 25, 28, 0.88f),
+            
+            // Skip "in" (would be "O" label)
+            
+            // Location - multi-token
+            createNamedEntity("B-LOC", "New", 32, 35, 0.92f),
+            createNamedEntity("I-LOC", "York", 36, 40, 0.91f),
+            createNamedEntity("I-LOC", "City", 41, 45, 0.89f)
+        };
+        
+        // Create a simple subclass for testing
+        // This avoids needing to instantiate the actual detector with models
+        HuggingFacePIIDetector testDetector = new HuggingFacePIIDetector(null) {
+            // @Override
+            // public List<PIIEntity> detect(String text) {
+            //     return Collections.emptyList(); // Not used in this test
+            // }
+            
+            // @Override
+            // protected Predictor<String, NamedEntity[]> initializePredictor() {
+            //     return null; // Not used in this test
+            // }
+        };
+        
+        // Process the named entities
+        List<PIIEntity> results = testDetector.processNamedEntities(mockEntities);
+        
+        // Verify results
+        assertEquals(3, results.size(), "Should detect 3 multi-token entities");
+        
+        // Verify person entity
+        PIIEntity person = results.get(0);
+        assertEquals("John Smith", person.getText(), "Should combine tokens for person name");
+        assertEquals(PIIType.PERSON_NAME, person.getType(), "Should map to PERSON_NAME type");
+        assertEquals(0, person.getStartPosition(), "Start position should match first token");
+        assertEquals(10, person.getEndPosition(), "End position should match last token");
+        
+        // Verify organization entity
+        PIIEntity org = results.get(1);
+        assertEquals("Google Inc", org.getText(), "Should combine tokens for organization");
+        assertEquals(PIIType.ORGANIZATION, org.getType(), "Should map to ORGANIZATION type");
+        assertEquals(18, org.getStartPosition(), "Start position should match first token");
+        assertEquals(28, org.getEndPosition(), "End position should match last token");
+        
+        // Verify location entity
+        PIIEntity location = results.get(2);
+        assertEquals("New York City", location.getText(), "Should combine three tokens for location");
+        assertEquals(PIIType.LOCATION, location.getType(), "Should map to LOCATION type");
+        assertEquals(32, location.getStartPosition(), "Start position should match first token");
+        assertEquals(45, location.getEndPosition(), "End position should match last token");
+    }
+    
+    /**
+     * Helper method to create a mock NamedEntity for testing
+     */
+    private ai.djl.modality.nlp.translator.NamedEntity createNamedEntity(
+            String entityType, String word, int start, int end, float score) {
+        return new ai.djl.modality.nlp.translator.NamedEntity(
+                entityType, score, 0, word, start, end);
     }
 }

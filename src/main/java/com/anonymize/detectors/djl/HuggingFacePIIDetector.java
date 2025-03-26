@@ -95,11 +95,11 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
         }
     }
     
-       /**
+    /**
      * Process named entities from model output into PIIEntity objects.
      * Combines B-* and I-* tagged entities into single entities.
      */
-    protected List<PIIEntity> processNamedEntities(NamedEntity[] entities) {
+    public List<PIIEntity> processNamedEntities(NamedEntity[] entities) {
         if (entities == null || entities.length == 0) {
             return Collections.emptyList();
         }
@@ -126,8 +126,8 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
             if (entityType.startsWith("B-")) {
                 // If we were building an entity, finish it
                 if (currentText.length() > 0 && currentType != null) {
-                    
-                    piiEntities.add(new PIIEntity(mappedType, startPos, entities[i-1].getEnd(), currentText.toString().trim(), confidenceSum));
+                    // Use currentType for the entity being finished, not the new entity's type
+                    piiEntities.add(new PIIEntity(currentType, startPos, entities[i-1].getEnd(), currentText.toString().trim(), confidenceSum/entityCount));
                 }
                 // Start new entity
                 currentText = new StringBuilder(entity.getWord());
@@ -147,7 +147,7 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
 
         // Add final entity if exists
         if (currentText.length() > 0 && currentType != null) {
-            piiEntities.add(new PIIEntity(currentType, startPos, entities[entities.length-1].getEnd(), currentText.toString().trim(), confidenceSum));
+            piiEntities.add(new PIIEntity(currentType, startPos, entities[entities.length-1].getEnd(), currentText.toString().trim(), confidenceSum/entityCount));
         }
 
         if (logger.isDebugEnabled()) {
