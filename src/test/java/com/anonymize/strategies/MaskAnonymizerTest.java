@@ -34,7 +34,7 @@ public class MaskAnonymizerTest {
         new Anonymizer.Builder()
             .withDetector(new EmailDetector())
             .withDetector(new PhoneNumberDetector())
-            .withAnonymizerStrategy(new MaskAnonymizer("[REDACTED]"))
+            .withAnonymizerStrategy(new MaskAnonymizer("****"))
             .build();
   }
 
@@ -74,11 +74,11 @@ public class MaskAnonymizerTest {
     assertFalse(
         result.getAnonymizedText().contains("test@example.com"), "Original email should be masked");
     assertTrue(
-        result.getAnonymizedText().contains("[REDACTED]"),
+        result.getAnonymizedText().contains("****"),
         "Email should be replaced with custom mask text");
 
     // Expected result with custom mask
-    String expected = "Please email me at [REDACTED]";
+    String expected = "Please email me at ****";
     assertEquals(
         expected, result.getAnonymizedText(), "Text should be properly masked with custom text");
   }
@@ -98,9 +98,11 @@ public class MaskAnonymizerTest {
 
     // Check that original values are masked
     assertFalse(result.getAnonymizedText().contains("john@example.com"), "Email should be masked");
+    assertFalse(result.getAnonymizedText().contains("(555) 123-4567"), "Phone number should be masked");
 
     // Original entities should be preserved for reference
     boolean hasEmailEntity = false;
+    boolean hasPhoneEntity = false;
     for (PIIEntity entity : result.getDetectedEntities()) {
       if (entity.getType().equals(PIIType.EMAIL)) {
         hasEmailEntity = true;
@@ -109,9 +111,17 @@ public class MaskAnonymizerTest {
             entity.getText(),
             "Original email text should be preserved in entity");
       }
+      if (entity.getType().equals(PIIType.PHONE_NUMBER)) {
+        hasPhoneEntity = true;
+        assertEquals(
+            "(555) 123-4567",
+            entity.getText(),
+            "Original phone number should be preserved in entity");
+      }
     }
 
     assertTrue(hasEmailEntity, "Should have preserved email entity information");
+    assertTrue(hasPhoneEntity, "Should have preserved phone entity information");
   }
 
   @Test

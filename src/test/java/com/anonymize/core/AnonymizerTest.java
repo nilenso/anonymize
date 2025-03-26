@@ -21,8 +21,9 @@ public class AnonymizerTest {
     Anonymizer anonymizer =
         new Anonymizer.Builder()
             .withDetector(new EmailDetector())
-            .withDetector(new PhoneNumberDetector())
+            .withDetector(new PhoneNumberDetector(Locale.US))  // Explicitly use US locale
             .withAnonymizerStrategy(new MaskAnonymizer())
+            .withLocale(Locale.US)  // Set anonymizer locale to US
             .build();
 
     // Anonymizer should not be null
@@ -84,16 +85,28 @@ public class AnonymizerTest {
     String multiText = "Contact me at user@example.com or call 555-123-4567";
     AnonymizationResult result = multiDetectorAnonymizer.anonymize(multiText);
 
-    // Verify email detection
+    // Verify both email and phone detection
     boolean hasEmailEntity = false;
+    boolean hasPhoneEntity = false;
     for (PIIEntity entity : result.getDetectedEntities()) {
       if (entity.getType().equals(PIIType.EMAIL)) {
         hasEmailEntity = true;
-        break;
+        assertEquals("user@example.com", entity.getText(), "Should capture correct email");
+      }
+      if (entity.getType().equals(PIIType.PHONE_NUMBER)) {
+        hasPhoneEntity = true;
+        assertEquals("555-123-4567", entity.getText(), "Should capture correct phone number");
       }
     }
 
     assertTrue(hasEmailEntity, "Should detect email entity");
+    assertTrue(hasPhoneEntity, "Should detect phone number entity");
+    assertEquals(2, result.getDetectedEntities().size(), "Should detect exactly 2 entities");
+
+    // Verify both entities are tagged in output
+    String anonymizedText = result.getAnonymizedText();
+    assertFalse(anonymizedText.contains("user@example.com"), "Email should be anonymized");
+    assertFalse(anonymizedText.contains("555-123-4567"), "Phone number should be anonymized");
   }
 
   @Test
@@ -134,5 +147,56 @@ public class AnonymizerTest {
         removed.contains("info@example.com"), "Removed output should not contain original email");
     assertFalse(
         tagged.contains("info@example.com"), "Tagged output should not contain original email");
+  }
+
+  @Test
+  public void testDetectorChaining() {
+    Anonymizer anonymizer =
+        new Anonymizer.Builder()
+            .withDetector(new EmailDetector())
+            .withDetector(new PhoneNumberDetector())
+            .withAnonymizerStrategy(new MaskAnonymizer())
+            .build();
+
+    // Test with multiple entities in different orders
+    String[] testCases = {
+      "Email: test@example.com Phone: 555-123-4567",  // Email first
+      "Phone: 555-123-4567 Email: test@example.com",  // Phone first
+      "test@example.com and 555-123-4567",           // No labels
+      "Contact: 555-123-4567 or test@example.com"    // Different format
+    };
+
+    for (String text : testCases) {
+      AnonymizationResult result = anonymizer.anonymize(text);
+      
+      // Print debug info
+      System.out.println("\nInput: " + text);
+      System.out.println("Output: " + result.getAnonymizedText());
+      System.out.println("Detected entities: ");
+      for (PIIEntity entity : result.getDetectedEntities()) {
+        System.out.println("- Type: " + entity.getType() + ", Text: " + entity.getText() + 
+                         ", Position: " + entity.getStartPosition() + "-" + entity.getEndPosition());
+      }
+
+      // Verify both entities are detected
+      assertEquals(2, result.getDetectedEntities().size(), 
+          "Should detect exactly 2 entities in: " + text);
+
+      // Verify both types are present
+      boolean hasEmail = false;
+      boolean hasPhone = false;
+      for (PIIEntity entity : result.getDetectedEntities()) {
+        if (entity.getType() == PIIType.EMAIL) hasEmail = true;
+        if (entity.getType() == PIIType.PHONE_NUMBER) hasPhone = true;
+      }
+      assertTrue(hasEmail, "Should detect email in: " + text);
+      assertTrue(hasPhone, "Should detect phone in: " + text);
+
+      // Verify anonymization
+      assertFalse(result.getAnonymizedText().contains("test@example.com"), 
+          "Email should be masked in: " + text);
+      assertFalse(result.getAnonymizedText().contains("555-123-4567"), 
+          "Phone should be masked in: " + text);
+    }
   }
 }

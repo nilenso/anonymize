@@ -27,12 +27,16 @@ public class PhoneNumberDetector extends BaseRegexDetector {
     // US phone patterns
     List<String> usPatterns =
         Arrays.asList(
+            "\\(\\d{3}\\)\\s*\\d{3}-\\d{4}", // (555) 123-4567
+            "\\d{3}-\\d{3}-\\d{4}", // 555-123-4567
             "\\(\\d{3}\\)\\s*\\d{3}[-.]?\\d{4}", // (123) 456-7890 or (123)456-7890
             "\\d{3}[-.]\\d{3}[-.]\\d{4}", // 123-456-7890 or 123.456.7890
             "\\d{10}", // 1234567890
             "\\+1\\s*\\(\\d{3}\\)\\s*\\d{3}[-. ]?\\d{4}", // +1 (123) 456-7890
             "\\(\\d{3}\\)\\s+\\d{3}\\s+\\d{4}", // (123) 456 7890
-            "\\d{3}\\s+\\d{3}\\s+\\d{4}" // 123 456 7890
+            "\\d{3}\\s+\\d{3}\\s+\\d{4}", // 123 456 7890
+            "\\(\\d{3}\\)\\s*\\d{3}-\\d{4}", // (555) 123-4567
+            "\\d{3}-\\d{3}-\\d{4}" // 555-123-4567
             );
     patterns.put(Locale.US, usPatterns);
 
@@ -69,8 +73,10 @@ public class PhoneNumberDetector extends BaseRegexDetector {
     // Generic international patterns
     List<String> genericPatterns =
         Arrays.asList(
-            "\\+\\d{1,3}[- ]?\\d{3,14}", // +XX XXXXXXXXXXXX
-            "\\d{5,15}" // Basic digits-only pattern
+            "\\d{3}-\\d{3}-\\d{4}", // Basic format like 555-123-4567
+            "\\(\\d{3}\\)\\s*\\d{3}-\\d{4}", // (555) 123-4567
+            "\\+\\d{1,3}[- ]?\\d{3}[- ]?\\d{4}", // International format
+            "\\d{10}" // Just digits
             );
     patterns.put(Locale.GENERIC, genericPatterns);
 
