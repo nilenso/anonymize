@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -242,7 +243,7 @@ public abstract class OpenNLPNERDetector extends BaseNERDetector {
     @Override
     public List<PIIEntity> detect(String text) {
         if (text == null || text.isEmpty()) {
-            return new ArrayList<>();
+            return Collections.emptyList();
         }
         
         List<PIIEntity> entities = new ArrayList<>();

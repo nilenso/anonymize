@@ -157,58 +157,10 @@ public class DJLModelManager {
                         .optProgress(new ProgressBar())
                         .build();
         ZooModel<String, NamedEntity[]> model = criteria.loadModel();
-        // String text = "My name is Wolfgang and I live in Berlin. Sezal Jain has lived in New York and France";
-        // Predictor<String, NamedEntity[]> predictor = model.newPredictor();
-        // long startTime = System.nanoTime();
-        // NamedEntity[] res = predictor.predict(text);
-        // long endTime = System.nanoTime();
-        // double duration = (endTime - startTime) / 1_000_000.0; // Convert to milliseconds
-        // System.out.println("Prediction results:");
-        // System.out.println(JsonUtils.GSON_PRETTY.toJson(res));
-        // System.out.printf("Prediction time: %.2f ms%n", duration);
 
         // Cache the loaded model
         modelCache.put(modelId, model);
         return model;
-
-        // try (ZooModel<String, NamedEntity[]> model = criteria.loadModel();
-        //         Predictor<String, NamedEntity[]> predictor = model.newPredictor()) {
-        //     long startTime = System.nanoTime();
-        //     NamedEntity[] res = predictor.predict(text);
-        //     long endTime = System.nanoTime();
-        //     double duration = (endTime - startTime) / 1_000_000.0; // Convert to milliseconds
-            
-        //     System.out.println("Prediction results:");
-        //     System.out.println(JsonUtils.GSON_PRETTY.toJson(res));
-        //     System.out.printf("Prediction time: %.2f ms%n", duration);
-        // }
-        // return model;
-
-        
-        // Build criteria for the model
-        // @SuppressWarnings("rawtypes")
-        // Criteria.Builder criteriaBuilder = Criteria.builder();
-                
-        // criteriaBuilder.optApplication(Application.NLP.TEXT_CLASSIFICATION)
-        //         .optProgress(new ProgressBar())
-        //         .optArtifactId(modelId)
-        //         .optEngine("PyTorch") // Specify PyTorch for DJL
-        //         .optOption("mapLocation", "cpu"); // Use CPU for inference
-        
-        // // Use modelUrl to determine if local or remote
-        // if (new File(modelUrl).exists() || modelUrl.startsWith("file:")) {
-        //     // Local model
-        //     criteriaBuilder.optModelPath(Paths.get(modelUrl));
-        // } else {
-        //     // Remote model (Hugging Face)
-        //     criteriaBuilder.optModelName(modelUrl);
-        // }
-        
-        // // Load the model
-        // ZooModel model = ModelZoo.loadModel(criteriaBuilder.build());
-        
-        
-        // return model;
     }
     
     /**

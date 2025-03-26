@@ -60,11 +60,11 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
             NamedEntity[] results = predictor.predict(text);
             long endTime = System.nanoTime();
             double duration = (endTime - startTime) / 1_000_000.0; // Convert to milliseconds
-
-
-            System.out.println("Prediction results:");
-            System.out.println(JsonUtils.GSON_PRETTY.toJson(results));
-            System.out.printf("Prediction time: %.2f ms%n", duration);
+            
+            if (logger.isDebugEnabled()) {
+                logger.debug("Prediction results: {}", JsonUtils.GSON_PRETTY.toJson(results));
+                logger.debug("Prediction time: {} ms", String.format("%.2f", duration));
+            }
             List<PIIEntity> entities = processNamedEntities(results);
             
             return entities;
@@ -76,6 +76,11 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
 
     @Override
     protected PIIType mapEntityType(String modelEntityType) {
+        if (modelEntityType == null) {
+            logger.debug("Null entity type provided");
+            return PIIType.MISC;
+        }
+        
         switch (modelEntityType) {
             case "B-PER": 
             case "I-PER": 
@@ -91,7 +96,7 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
                 return PIIType.MISC;
             default: 
                 logger.debug("Unmapped entity type: {}", modelEntityType);
-                return null;
+                return PIIType.MISC; // Return MISC instead of null to prevent NullPointerExceptions
         }
     }
     
@@ -119,13 +124,10 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
 
             String entityType = entity.getEntity();
             PIIType mappedType = mapEntityType(entityType);
-            if (mappedType == null) {
-                continue;
-            }
 
             if (entityType.startsWith("B-")) {
                 // If we were building an entity, finish it
-                if (currentText.length() > 0 && currentType != null) {
+                if (currentText.length() > 0 && currentType != null && i > 0) {
                     // Use currentType for the entity being finished, not the new entity's type
                     piiEntities.add(new PIIEntity(currentType, startPos, entities[i-1].getEnd(), currentText.toString().trim(), confidenceSum/entityCount));
                 }
@@ -146,7 +148,7 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
         }
 
         // Add final entity if exists
-        if (currentText.length() > 0 && currentType != null) {
+        if (currentText.length() > 0 && currentType != null && entities.length > 0) {
             piiEntities.add(new PIIEntity(currentType, startPos, entities[entities.length-1].getEnd(), currentText.toString().trim(), confidenceSum/entityCount));
         }
 

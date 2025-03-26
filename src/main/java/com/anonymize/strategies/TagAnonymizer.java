@@ -13,14 +13,14 @@ public class TagAnonymizer implements AnonymizerStrategy {
     private final String tokenFormat;
 
     /**
-     * Creates a new TokenizeAnonymizer with the default token format.
+     * Creates a new TagAnonymizer with the default token format.
      */
     public TagAnonymizer() {
         this("<%s_%d>");
     }
 
     /**
-     * Creates a new TokenizeAnonymizer with a custom token format.
+     * Creates a new TagAnonymizer with a custom token format.
      * Format should include %s for the type and %d for the counter.
      *
      * @param tokenFormat The format to use for tokens
@@ -58,6 +58,6 @@ public class TagAnonymizer implements AnonymizerStrategy {
 
     @Override
     public String getStrategyName() {
-        return "TOKENIZE";
+        return "TAG";
     }
 }

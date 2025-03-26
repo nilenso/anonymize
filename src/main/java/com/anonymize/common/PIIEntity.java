@@ -62,18 +62,4 @@ public class PIIEntity {
                 ", confidence=" + confidence +
                 '}';
     }
-
-    //     /**
-    //  * Helper method to create a PIIEntity with a specific entity type.
-    //  *
-    //  * @param startPosition Start position of the entity in the text
-    //  * @param endPosition End position of the entity in the text
-    //  * @param text The detected text
-    //  * @param confidence Confidence level of the detection
-    //  * @param entityType The specific entity type to use
-    //  * @return A new PIIEntity
-    //  */
-    // public PIIEntity createEntity(int startPosition, int endPosition, String text, double confidence, String entityType) {
-    //     return new PIIEntity(PIIType.fromValue(entityType), startPosition, endPosition, text, confidence);
-    // }
 }

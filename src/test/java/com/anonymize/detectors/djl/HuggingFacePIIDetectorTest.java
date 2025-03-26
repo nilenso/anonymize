@@ -130,7 +130,7 @@ public class HuggingFacePIIDetectorTest {
             assertEquals(PIIType.ORGANIZATION, detector.mapEntityType("I-ORG"), "ORG should map to ORGANIZATION");
             assertEquals(PIIType.LOCATION, detector.mapEntityType("B-LOC"), "LOC should map to LOCATION");
             assertEquals(PIIType.MISC, detector.mapEntityType("I-MISC"), "MISC should remain MISC");
-            assertNull(detector.mapEntityType("UNKNOWN"), "Unknown type should map to null");
+            assertEquals(PIIType.MISC, detector.mapEntityType("UNKNOWN"), "Unknown type should map to MISC");
         } finally {
             detector.close();
         }
