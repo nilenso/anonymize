@@ -41,6 +41,7 @@ dependencies {
     implementation 'org.yaml:snakeyaml:1.30'
     
     // NLP dependencies
+    
     implementation 'org.apache.opennlp:opennlp-tools:1.9.4'
     
     // For model management
@@ -56,11 +57,6 @@ dependencies {
     implementation 'ai.djl.pytorch:pytorch-model-zoo'
     // Optional for native PyTorch acceleration if available
     // runtimeOnly 'ai.djl.pytorch:pytorch-native-auto'
-    
-    // For document format support (will be optional in the future)
-    // implementation 'org.apache.pdfbox:pdfbox:2.0.27'
-    // implementation 'org.apache.poi:poi:5.2.2'
-    // implementation 'org.apache.poi:poi-ooxml:5.2.2'
     
     // Testing
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'

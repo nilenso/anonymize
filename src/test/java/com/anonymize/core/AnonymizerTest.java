@@ -21,9 +21,9 @@ public class AnonymizerTest {
     Anonymizer anonymizer =
         new Anonymizer.Builder()
             .withDetector(new EmailDetector())
-            .withDetector(new PhoneNumberDetector(Locale.US))  // Explicitly use US locale
+            .withDetector(new PhoneNumberDetector(Locale.US)) // Explicitly use US locale
             .withAnonymizerStrategy(new MaskAnonymizer())
-            .withLocale(Locale.US)  // Set anonymizer locale to US
+            .withLocale(Locale.US) // Set anonymizer locale to US
             .build();
 
     // Anonymizer should not be null
@@ -160,27 +160,34 @@ public class AnonymizerTest {
 
     // Test with multiple entities in different orders
     String[] testCases = {
-      "Email: test@example.com Phone: 555-123-4567",  // Email first
-      "Phone: 555-123-4567 Email: test@example.com",  // Phone first
-      "test@example.com and 555-123-4567",           // No labels
-      "Contact: 555-123-4567 or test@example.com"    // Different format
+      "Email: test@example.com Phone: 555-123-4567", // Email first
+      "Phone: 555-123-4567 Email: test@example.com", // Phone first
+      "test@example.com and 555-123-4567", // No labels
+      "Contact: 555-123-4567 or test@example.com" // Different format
     };
 
     for (String text : testCases) {
       AnonymizationResult result = anonymizer.anonymize(text);
-      
+
       // Print debug info
       System.out.println("\nInput: " + text);
       System.out.println("Output: " + result.getAnonymizedText());
       System.out.println("Detected entities: ");
       for (PIIEntity entity : result.getDetectedEntities()) {
-        System.out.println("- Type: " + entity.getType() + ", Text: " + entity.getText() + 
-                         ", Position: " + entity.getStartPosition() + "-" + entity.getEndPosition());
+        System.out.println(
+            "- Type: "
+                + entity.getType()
+                + ", Text: "
+                + entity.getText()
+                + ", Position: "
+                + entity.getStartPosition()
+                + "-"
+                + entity.getEndPosition());
       }
 
       // Verify both entities are detected
-      assertEquals(2, result.getDetectedEntities().size(), 
-          "Should detect exactly 2 entities in: " + text);
+      assertEquals(
+          2, result.getDetectedEntities().size(), "Should detect exactly 2 entities in: " + text);
 
       // Verify both types are present
       boolean hasEmail = false;
@@ -193,9 +200,11 @@ public class AnonymizerTest {
       assertTrue(hasPhone, "Should detect phone in: " + text);
 
       // Verify anonymization
-      assertFalse(result.getAnonymizedText().contains("test@example.com"), 
+      assertFalse(
+          result.getAnonymizedText().contains("test@example.com"),
           "Email should be masked in: " + text);
-      assertFalse(result.getAnonymizedText().contains("555-123-4567"), 
+      assertFalse(
+          result.getAnonymizedText().contains("555-123-4567"),
           "Phone should be masked in: " + text);
     }
   }

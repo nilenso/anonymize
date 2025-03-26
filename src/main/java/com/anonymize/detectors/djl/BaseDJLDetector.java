@@ -132,27 +132,6 @@ public abstract class BaseDJLDetector extends AbstractDetector {
 
   public abstract List<PIIEntity> detect(String text);
 
-  // @Override
-  // public List<PIIEntity> detect(String text) {
-  //     if (text == null || text.isEmpty()) {
-  //         return Collections.emptyList();
-  //     }
-
-  //     // Ensure model is loaded
-  //     if (!loadModelIfNeeded()) {
-  //         logger.warn("Model not loaded, skipping detection");
-  //         return Collections.emptyList();
-  //     }
-
-  //     try {
-  //         NamedEntity[] results = predictor.predict(text);
-  //         return processNamedEntities(results);
-  //     } catch (Exception e) {
-  //         logger.error("Error performing DJL detection: {}", e.getMessage());
-  //         return Collections.emptyList();
-  //     }
-  // }
-
   /**
    * Called when this detector is no longer needed. Releases resources associated with the model.
    */

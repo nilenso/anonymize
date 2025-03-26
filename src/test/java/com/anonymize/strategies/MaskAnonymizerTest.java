@@ -98,7 +98,8 @@ public class MaskAnonymizerTest {
 
     // Check that original values are masked
     assertFalse(result.getAnonymizedText().contains("john@example.com"), "Email should be masked");
-    assertFalse(result.getAnonymizedText().contains("(555) 123-4567"), "Phone number should be masked");
+    assertFalse(
+        result.getAnonymizedText().contains("(555) 123-4567"), "Phone number should be masked");
 
     // Original entities should be preserved for reference
     boolean hasEmailEntity = false;

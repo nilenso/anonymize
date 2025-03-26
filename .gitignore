@@ -5,7 +5,7 @@ build/
 
 # Downloaded models
 models/opennlp/*.bin
-models/dlj/*
+models/djl/*
 # IntelliJ IDEA
 .idea/
 *.iws
