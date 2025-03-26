@@ -2,12 +2,18 @@ package com.anonymize.detectors.djl;
 
 import ai.djl.Application;
 import ai.djl.MalformedModelException;
+import ai.djl.ModelException;
+import ai.djl.huggingface.translator.TokenClassificationTranslatorFactory;
 import ai.djl.inference.Predictor;
+import ai.djl.modality.nlp.translator.NamedEntity;
 import ai.djl.repository.zoo.Criteria;
 import ai.djl.repository.zoo.ModelNotFoundException;
 import ai.djl.repository.zoo.ModelZoo;
 import ai.djl.repository.zoo.ZooModel;
 import ai.djl.training.util.ProgressBar;
+import ai.djl.translate.TranslateException;
+import ai.djl.util.JsonUtils;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +37,7 @@ public class DJLModelManager {
     private static final String DEFAULT_MODEL_DIR = "models/djl";
     
     // Cache to avoid reloading the same models
-    @SuppressWarnings("rawtypes")
-    private final Map<String, ZooModel> modelCache = new ConcurrentHashMap<>();
+    private final Map<String, ZooModel<String, NamedEntity[]>> modelCache = new ConcurrentHashMap<>();
     
     // Model repository path
     private final Path modelRepository;
@@ -71,7 +76,7 @@ public class DJLModelManager {
      */
     private void initializeModelUrls() {
         // Setup commonly used NER/PII detection model IDs and their HF URLs
-        modelUrls.put("ner-bert-base", "dslim/bert-base-NER");
+        modelUrls.put("ner-bert-base", "djl://ai.djl.huggingface.pytorch/dslim/bert-base-NER");
         modelUrls.put("pii-bert", "vietai/phobert-base-v2");
         // Add more models as needed
     }
@@ -103,14 +108,14 @@ public class DJLModelManager {
         // Try to download and load the model
         try {
             logger.info("Attempting to download model: {}", modelId);
-            @SuppressWarnings("rawtypes")
-            ZooModel model = loadModel(modelId);
+
+            ZooModel<String, NamedEntity[]> model = loadModel(modelId);
             // Close the model after loading - we just want to ensure it's downloaded
             model.close();
             modelCache.remove(modelId);
             logger.info("Successfully downloaded model: {}", modelId);
             return true;
-        } catch (ModelNotFoundException | MalformedModelException | IOException e) {
+        } catch (IOException | ModelException |TranslateException e) {
             logger.error("Failed to download model {}: {}", modelId, e.getMessage());
             return false;
         }
@@ -127,7 +132,7 @@ public class DJLModelManager {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public ZooModel loadModel(String modelId) 
-            throws ModelNotFoundException, MalformedModelException, IOException {
+            throws ModelNotFoundException, MalformedModelException, IOException, ModelException, TranslateException {
         
         // Check if model is already loaded
         if (modelCache.containsKey(modelId)) {
@@ -138,33 +143,72 @@ public class DJLModelManager {
         String modelUrl = modelUrls.getOrDefault(modelId, modelId);
         
         logger.info("Loading DJL model: {}", modelId);
-        
-        // Build criteria for the model
-        @SuppressWarnings("rawtypes")
-        Criteria.Builder criteriaBuilder = Criteria.builder();
-                
-        criteriaBuilder.optApplication(Application.NLP.TEXT_CLASSIFICATION)
-                .optProgress(new ProgressBar())
-                .optArtifactId(modelId)
-                .optEngine("PyTorch") // Specify PyTorch for DJL
-                .optOption("mapLocation", "cpu"); // Use CPU for inference
-        
-        // Use modelUrl to determine if local or remote
-        if (new File(modelUrl).exists() || modelUrl.startsWith("file:")) {
-            // Local model
-            criteriaBuilder.optModelPath(Paths.get(modelUrl));
-        } else {
-            // Remote model (Hugging Face)
-            criteriaBuilder.optModelName(modelUrl);
-        }
-        
-        // Load the model
-        ZooModel model = ModelZoo.loadModel(criteriaBuilder.build());
-        
+
+
+
+
+        Criteria<String, NamedEntity[]> criteria =
+                Criteria.builder()
+                        .setTypes(String.class, NamedEntity[].class)
+                        .optModelUrls( modelUrl)
+                        .optEngine("PyTorch")
+                        .optOption("mapLocation", "cpu") // Use CPU for inference
+                        .optTranslatorFactory(new TokenClassificationTranslatorFactory())
+                        .optProgress(new ProgressBar())
+                        .build();
+        ZooModel<String, NamedEntity[]> model = criteria.loadModel();
+        // String text = "My name is Wolfgang and I live in Berlin. Sezal Jain has lived in New York and France";
+        // Predictor<String, NamedEntity[]> predictor = model.newPredictor();
+        // long startTime = System.nanoTime();
+        // NamedEntity[] res = predictor.predict(text);
+        // long endTime = System.nanoTime();
+        // double duration = (endTime - startTime) / 1_000_000.0; // Convert to milliseconds
+        // System.out.println("Prediction results:");
+        // System.out.println(JsonUtils.GSON_PRETTY.toJson(res));
+        // System.out.printf("Prediction time: %.2f ms%n", duration);
+
         // Cache the loaded model
         modelCache.put(modelId, model);
-        
         return model;
+
+        // try (ZooModel<String, NamedEntity[]> model = criteria.loadModel();
+        //         Predictor<String, NamedEntity[]> predictor = model.newPredictor()) {
+        //     long startTime = System.nanoTime();
+        //     NamedEntity[] res = predictor.predict(text);
+        //     long endTime = System.nanoTime();
+        //     double duration = (endTime - startTime) / 1_000_000.0; // Convert to milliseconds
+            
+        //     System.out.println("Prediction results:");
+        //     System.out.println(JsonUtils.GSON_PRETTY.toJson(res));
+        //     System.out.printf("Prediction time: %.2f ms%n", duration);
+        // }
+        // return model;
+
+        
+        // Build criteria for the model
+        // @SuppressWarnings("rawtypes")
+        // Criteria.Builder criteriaBuilder = Criteria.builder();
+                
+        // criteriaBuilder.optApplication(Application.NLP.TEXT_CLASSIFICATION)
+        //         .optProgress(new ProgressBar())
+        //         .optArtifactId(modelId)
+        //         .optEngine("PyTorch") // Specify PyTorch for DJL
+        //         .optOption("mapLocation", "cpu"); // Use CPU for inference
+        
+        // // Use modelUrl to determine if local or remote
+        // if (new File(modelUrl).exists() || modelUrl.startsWith("file:")) {
+        //     // Local model
+        //     criteriaBuilder.optModelPath(Paths.get(modelUrl));
+        // } else {
+        //     // Remote model (Hugging Face)
+        //     criteriaBuilder.optModelName(modelUrl);
+        // }
+        
+        // // Load the model
+        // ZooModel model = ModelZoo.loadModel(criteriaBuilder.build());
+        
+        
+        // return model;
     }
     
     /**

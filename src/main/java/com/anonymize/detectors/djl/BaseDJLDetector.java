@@ -1,9 +1,10 @@
 package com.anonymize.detectors.djl;
 
-import ai.djl.MalformedModelException;
+import ai.djl.ModelException;
 import ai.djl.inference.Predictor;
-import ai.djl.repository.zoo.ModelNotFoundException;
+import ai.djl.modality.nlp.translator.NamedEntity;
 import ai.djl.repository.zoo.ZooModel;
+import ai.djl.translate.TranslateException;
 import ai.djl.translate.Translator;
 import com.anonymize.common.Locale;
 import com.anonymize.common.PIIEntity;
@@ -34,39 +35,12 @@ public abstract class BaseDJLDetector extends AbstractDetector {
     // The confidence threshold for detections
     protected final double confidenceThreshold;
     
-    // The loaded model and predictor
-    @SuppressWarnings("rawtypes")
-    protected ZooModel model;
-    protected Predictor predictor;
+// The loaded model and predictor
+    protected ZooModel<String, NamedEntity[]> model;
+    protected Predictor<String, NamedEntity[]> predictor;
     
     // Flag to indicate if the model is loaded
     protected boolean modelLoaded = false;
-    
-    /**
-     * Internal class to represent entity detection results.
-     */
-    protected static class EntityResult {
-        private String entity;
-        private String type;
-        private int startPosition;
-        private int endPosition;
-        private double confidence;
-        
-        public String getEntity() { return entity; }
-        public void setEntity(String entity) { this.entity = entity; }
-        
-        public String getType() { return type; }
-        public void setType(String type) { this.type = type; }
-        
-        public int getStartPosition() { return startPosition; }
-        public void setStartPosition(int startPosition) { this.startPosition = startPosition; }
-        
-        public int getEndPosition() { return endPosition; }
-        public void setEndPosition(int endPosition) { this.endPosition = endPosition; }
-        
-        public double getConfidence() { return confidence; }
-        public void setConfidence(double confidence) { this.confidence = confidence; }
-    }
     
     /**
      * Creates a new BaseDJLDetector with the specified type, locale, and model ID.
@@ -117,7 +91,7 @@ public abstract class BaseDJLDetector extends AbstractDetector {
             predictor = initializePredictor();
             modelLoaded = true;
             return true;
-        } catch (ModelNotFoundException | MalformedModelException | IOException e) {
+        } catch (ModelException | TranslateException | IOException e) {
             logger.error("Failed to load model {}: {}", modelId, e.getMessage());
             return false;
         }
@@ -150,64 +124,28 @@ public abstract class BaseDJLDetector extends AbstractDetector {
      */
     protected abstract String mapEntityType(String modelEntityType);
     
-    @Override
-    public List<PIIEntity> detect(String text) {
-        if (text == null || text.isEmpty()) {
-            return Collections.emptyList();
-        }
+ 
+    public abstract List<PIIEntity> detect(String text);
+    // @Override
+    // public List<PIIEntity> detect(String text) {
+    //     if (text == null || text.isEmpty()) {
+    //         return Collections.emptyList();
+    //     }
         
-        // Ensure model is loaded
-        if (!loadModelIfNeeded()) {
-            logger.warn("Model not loaded, skipping detection");
-            return Collections.emptyList();
-        }
+    //     // Ensure model is loaded
+    //     if (!loadModelIfNeeded()) {
+    //         logger.warn("Model not loaded, skipping detection");
+    //         return Collections.emptyList();
+    //     }
         
-        try {
-            // Perform prediction - create dummy results for now
-            List<EntityResult> results = new ArrayList<>();
-            
-            // // For testing, add some dummy entity results if the text contains common names
-            // if (text.contains("John") || text.contains("Jane") || text.contains("Smith")) {
-            //     EntityResult result = new EntityResult();
-            //     result.setEntity("John Smith");
-            //     result.setType("PER");
-            //     result.setStartPosition(text.indexOf("John"));
-            //     result.setEndPosition(text.indexOf("John") + 10); // Approximate
-            //     result.setConfidence(0.95);
-            //     results.add(result);
-            // }
-            
-            // Convert results to PIIEntity objects
-            List<PIIEntity> entities = new ArrayList<>();
-            for (EntityResult result : results) {
-                // Skip entities below confidence threshold
-                if (result.getConfidence() < confidenceThreshold) {
-                    continue;
-                }
-                
-                // Map the model's entity type to PIIType
-                String piiType = mapEntityType(result.getType());
-                if (piiType == null) {
-                    // Skip unsupported entity types
-                    continue;
-                }
-                
-                // Create the PIIEntity
-                PIIEntity entity = createEntity(
-                        result.getStartPosition(),
-                        result.getEndPosition(),
-                        result.getEntity(),
-                        result.getConfidence()
-                );
-                entities.add(entity);
-            }
-            
-            return entities;
-        } catch (Exception e) {
-            logger.error("Error performing DJL detection: {}", e.getMessage());
-            return Collections.emptyList();
-        }
-    }
+    //     try {
+    //         NamedEntity[] results = predictor.predict(text);
+    //         return processNamedEntities(results);
+    //     } catch (Exception e) {
+    //         logger.error("Error performing DJL detection: {}", e.getMessage());
+    //         return Collections.emptyList();
+    //     }
+    // }
     
     /**
      * Called when this detector is no longer needed.

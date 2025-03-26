@@ -94,14 +94,14 @@ public class HuggingFacePIIDetectorTest {
             List<PIIEntity> entities = detector.detect(text);
             
             // Print results for debugging
-            System.out.println("Person Detection Results:");
-            if (entities.isEmpty()) {
-                System.out.println("  No entities detected");
-            } else {
-                for (PIIEntity entity : entities) {
-                    System.out.println("  - " + entity.getText() + " (" + entity.getType() + ", " + entity.getConfidence() + ")");
-                }
-            }
+            // System.out.println("Person Detection Results:");
+            // if (entities.isEmpty()) {
+            //     System.out.println("  No entities detected");
+            // } else {
+            //     for (PIIEntity entity : entities) {
+            //         System.out.println("  - " + entity.getText() + " (" + entity.getType() + ", " + entity.getConfidence() + ")");
+            //     }
+            // }
             
             // Check if any person entities were detected
             boolean foundPerson = entities.stream()
@@ -231,55 +231,55 @@ public class HuggingFacePIIDetectorTest {
         }
     }
     
-    @Disabled("Mock functionality needs to be updated")
-    @Test
-    public void testConfidenceThreshold() {
-        // Create mock model manager
-        DJLModelManager mockManager = Mockito.mock(DJLModelManager.class);
+    // @Disabled("Mock functionality needs to be updated")
+    // @Test
+    // public void testConfidenceThreshold() {
+    //     // Create mock model manager
+    //     DJLModelManager mockManager = Mockito.mock(DJLModelManager.class);
         
-        // Create the detector with the mock manager
-        HuggingFacePIIDetector detector = Mockito.spy(new HuggingFacePIIDetector(mockManager));
+    //     // Create the detector with the mock manager
+    //     HuggingFacePIIDetector detector = Mockito.spy(new HuggingFacePIIDetector(mockManager));
         
-        try {
-            // Mock the loadModelIfNeeded method to return true
-            Mockito.doReturn(true).when(detector).loadModelIfNeeded();
+    //     try {
+    //         // Mock the loadModelIfNeeded method to return true
+    //         Mockito.doReturn(true).when(detector).loadModelIfNeeded();
             
-            // Create entity results with different confidence levels
-            List<BaseDJLDetector.EntityResult> mockResults = new ArrayList<>();
+    //         // Create entity results with different confidence levels
+    //         List<BaseDJLDetector.EntityResult> mockResults = new ArrayList<>();
             
-            // Entity with confidence above threshold
-            BaseDJLDetector.EntityResult highConfidence = new BaseDJLDetector.EntityResult();
-            highConfidence.setEntity("John Smith");
-            highConfidence.setType("PER");
-            highConfidence.setStartPosition(0);
-            highConfidence.setEndPosition(10);
-            highConfidence.setConfidence(0.95); // Above the default threshold
-            mockResults.add(highConfidence);
+    //         // Entity with confidence above threshold
+    //         BaseDJLDetector.EntityResult highConfidence = new BaseDJLDetector.EntityResult();
+    //         highConfidence.setEntity("John Smith");
+    //         highConfidence.setType("PER");
+    //         highConfidence.setStartPosition(0);
+    //         highConfidence.setEndPosition(10);
+    //         highConfidence.setConfidence(0.95); // Above the default threshold
+    //         mockResults.add(highConfidence);
             
-            // Entity with confidence below threshold
-            BaseDJLDetector.EntityResult lowConfidence = new BaseDJLDetector.EntityResult();
-            lowConfidence.setEntity("ABC Corp");
-            lowConfidence.setType("ORG");
-            lowConfidence.setStartPosition(20);
-            lowConfidence.setEndPosition(28);
-            lowConfidence.setConfidence(0.5); // Below the default threshold
-            mockResults.add(lowConfidence);
+    //         // Entity with confidence below threshold
+    //         BaseDJLDetector.EntityResult lowConfidence = new BaseDJLDetector.EntityResult();
+    //         lowConfidence.setEntity("ABC Corp");
+    //         lowConfidence.setType("ORG");
+    //         lowConfidence.setStartPosition(20);
+    //         lowConfidence.setEndPosition(28);
+    //         lowConfidence.setConfidence(0.5); // Below the default threshold
+    //         mockResults.add(lowConfidence);
             
-            // Mock the predictor's predict method to return our mock results
-            Mockito.when(detector.getPredictorForTesting(anyString())).thenReturn(mockResults);
+    //         // Mock the predictor's predict method to return our mock results
+    //         Mockito.when(detector.getPredictorForTesting(anyString())).thenReturn(mockResults);
             
-            // Run detection
-            List<PIIEntity> entities = detector.detect("John Smith works at ABC Corp");
+    //         // Run detection
+    //         List<PIIEntity> entities = detector.detect("John Smith works at ABC Corp");
             
-            // Verify that only the high confidence entity was included
-            assertEquals(1, entities.size(), "Should only detect high confidence entities");
-            assertEquals("John Smith", entities.get(0).getText(), "Should detect John Smith");
-            assertEquals("PERSON", entities.get(0).getType(), "Type should be PERSON");
-            assertEquals(0.95, entities.get(0).getConfidence(), 0.01, "Confidence should be preserved");
-        } finally {
-            detector.close();
-        }
-    }
+    //         // Verify that only the high confidence entity was included
+    //         assertEquals(1, entities.size(), "Should only detect high confidence entities");
+    //         assertEquals("John Smith", entities.get(0).getText(), "Should detect John Smith");
+    //         assertEquals("PERSON", entities.get(0).getType(), "Type should be PERSON");
+    //         assertEquals(0.95, entities.get(0).getConfidence(), 0.01, "Confidence should be preserved");
+    //     } finally {
+    //         detector.close();
+    //     }
+    // }
     
     @Test
     public void testEmptyInput() {
