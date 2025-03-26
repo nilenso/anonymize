@@ -3,6 +3,7 @@ package com.anonymize.detectors.opennlp;
 import com.anonymize.common.Locale;
 import com.anonymize.common.PIIEntity;
 import com.anonymize.detectors.BaseNERDetector;
+import com.anonymize.common.PIIType;
 
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
@@ -268,7 +269,7 @@ public abstract class OpenNLPNERDetector extends BaseNERDetector {
                 String entityText = text.substring(startPos, endPos);
                 
                 // Create and add the entity
-                entities.add(createEntity(startPos, endPos, entityText, confidence));
+                entities.add(new PIIEntity(PIIType.MISC,startPos, endPos, entityText, confidence));
             }
             
             // Clear adaptive data from the name finder to prepare for the next call

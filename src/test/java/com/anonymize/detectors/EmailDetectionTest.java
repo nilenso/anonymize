@@ -38,7 +38,7 @@ public class EmailDetectionTest {
         // Verify the detected entity is the correct email
         PIIEntity entity = result.getDetectedEntities().get(0);
         assertEquals("user@example.com", entity.getText(), "Should extract the exact email text");
-        assertEquals(PIIType.EMAIL.getValue(), entity.getType(), "Should identify as EMAIL type");
+        assertEquals(PIIType.EMAIL, entity.getType(), "Should identify as EMAIL type");
         assertEquals(text.indexOf("user@example.com"), entity.getStartPosition(), "Should have correct start position");
         assertEquals(text.indexOf("user@example.com") + "user@example.com".length(), 
                     entity.getEndPosition(), "Should have correct end position");
@@ -62,7 +62,7 @@ public class EmailDetectionTest {
         
         // Verify each email entity has the correct type
         for (PIIEntity entity : result.getDetectedEntities()) {
-            assertEquals(PIIType.EMAIL.getValue(), entity.getType(), "Entity should be EMAIL type");
+            assertEquals(PIIType.EMAIL, entity.getType(), "Entity should be EMAIL type");
             assertTrue(entity.getText().contains("@"), "Detected entity should contain @ symbol");
         }
         
@@ -92,7 +92,7 @@ public class EmailDetectionTest {
         // Verify entity details
         PIIEntity entity = result.getDetectedEntities().get(0);
         assertEquals("john.doe+label@company-name.co.uk", entity.getText(), "Should extract exact email");
-        assertEquals(PIIType.EMAIL.getValue(), entity.getType(), "Should be identified as EMAIL type");
+        assertEquals(PIIType.EMAIL, entity.getType(), "Should be identified as EMAIL type");
         
         // Verify proper confidence level (should be high for email detection)
         assertTrue(entity.getConfidence() > 0.8, "Email detection should have high confidence");

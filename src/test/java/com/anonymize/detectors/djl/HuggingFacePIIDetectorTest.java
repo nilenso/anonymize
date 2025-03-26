@@ -2,6 +2,7 @@ package com.anonymize.detectors.djl;
 
 import com.anonymize.common.Locale;
 import com.anonymize.common.PIIEntity;
+import com.anonymize.common.PIIType;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
@@ -105,7 +106,7 @@ public class HuggingFacePIIDetectorTest {
             
             // Check if any person entities were detected
             boolean foundPerson = entities.stream()
-                    .anyMatch(e -> e.getType().equals("PERSON"));
+                    .anyMatch(e -> e.getType() == PIIType.PERSON_NAME);
             
             assertTrue(foundPerson, "Should detect at least one person name");
         } finally {
@@ -122,10 +123,10 @@ public class HuggingFacePIIDetectorTest {
         
         try {
             // Test the entity type mapping
-            assertEquals("PERSON", detector.mapEntityType("PER"), "PER should map to PERSON");
-            assertEquals("ORGANIZATION", detector.mapEntityType("ORG"), "ORG should map to ORGANIZATION");
-            assertEquals("LOCATION", detector.mapEntityType("LOC"), "LOC should map to LOCATION");
-            assertEquals("MISC", detector.mapEntityType("MISC"), "MISC should remain MISC");
+            assertEquals(PIIType.PERSON_NAME, detector.mapEntityType("B-PER"), "PER should map to PERSON");
+            assertEquals(PIIType.ORGANIZATION, detector.mapEntityType("I-ORG"), "ORG should map to ORGANIZATION");
+            assertEquals(PIIType.LOCATION, detector.mapEntityType("B-LOC"), "LOC should map to LOCATION");
+            assertEquals(PIIType.MISC, detector.mapEntityType("I-MISC"), "MISC should remain MISC");
             assertNull(detector.mapEntityType("UNKNOWN"), "Unknown type should map to null");
         } finally {
             detector.close();
@@ -158,7 +159,7 @@ public class HuggingFacePIIDetectorTest {
             
             // Check if any location entities were detected
             boolean foundLocation = entities.stream()
-                    .anyMatch(e -> e.getType().equals("LOCATION"));
+                    .anyMatch(e -> e.getType().equals(PIIType.LOCATION));
             
             assertTrue(foundLocation, "Should detect at least one location");
         } finally {
@@ -216,7 +217,7 @@ public class HuggingFacePIIDetectorTest {
             
             // Verify entity types are mapped correctly
             for (PIIEntity entity : entities) {
-                String type = entity.getType();
+                String type = entity.getType().getValue();
                 assertTrue(
                     type.equals("PERSON") ||
                     type.equals("LOCATION") ||

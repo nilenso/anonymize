@@ -55,7 +55,7 @@ public class PhoneDetectionTest {
         // If entities were detected, verify they're the right type with correct content
         if (!result.getDetectedEntities().isEmpty()) {
             PIIEntity entity = result.getDetectedEntities().get(0);
-            assertEquals(PIIType.PHONE_NUMBER.getValue(), entity.getType(), 
+            assertEquals(PIIType.PHONE_NUMBER, entity.getType(), 
                        "Entity should be identified as a phone number");
             
             // Verify phone entity contains digits
@@ -80,7 +80,7 @@ public class PhoneDetectionTest {
         
         // For each entity detected, verify it's a phone number
         for (PIIEntity entity : result.getDetectedEntities()) {
-            assertEquals(PIIType.PHONE_NUMBER.getValue(), entity.getType(),
+            assertEquals(PIIType.PHONE_NUMBER, entity.getType(),
                        "Entity should be a phone number");
                        
             // Verify the detected phone contains digits
@@ -117,7 +117,7 @@ public class PhoneDetectionTest {
                 // Verify the match is accurate
                 assertEquals(testCase, entities.get(0).getText(),
                           "Detector should extract exact phone number text");
-                assertEquals(PIIType.PHONE_NUMBER.getValue(), entities.get(0).getType(),
+                assertEquals(PIIType.PHONE_NUMBER, entities.get(0).getType(),
                           "Entity type should be PHONE_NUMBER");
             }
         }

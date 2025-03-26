@@ -101,7 +101,7 @@ public class MaskAnonymizerTest {
         // Original entities should be preserved for reference
         boolean hasEmailEntity = false;
         for (PIIEntity entity : result.getDetectedEntities()) {
-            if (entity.getType().equals(PIIType.EMAIL.getValue())) {
+            if (entity.getType().equals(PIIType.EMAIL)) {
                 hasEmailEntity = true;
                 assertEquals("john@example.com", entity.getText(),
                            "Original email text should be preserved in entity");

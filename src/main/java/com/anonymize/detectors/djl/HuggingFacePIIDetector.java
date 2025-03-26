@@ -10,6 +10,7 @@ import ai.djl.util.JsonUtils;
 
 import com.anonymize.common.Locale;
 import com.anonymize.common.PIIEntity;
+import com.anonymize.common.PIIType;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +58,6 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
             long startTime = System.nanoTime();
             // Perform prediction using the model's predictor
             NamedEntity[] results = predictor.predict(text);
-            // NamedEntity[] res = predictor.predict(text);
             long endTime = System.nanoTime();
             double duration = (endTime - startTime) / 1_000_000.0; // Convert to milliseconds
 
@@ -75,16 +75,20 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
     }
 
     @Override
-    protected String mapEntityType(String modelEntityType) {
+    protected PIIType mapEntityType(String modelEntityType) {
         switch (modelEntityType) {
-            case "B-PER": return "PERSON";
-            case "B-ORG": return "ORGANIZATION";
-            case "B-LOC": return "LOCATION";
-            case "B-MISC": return "MISC";
-            case "I-PER": return "PERSON";
-            case "I-ORG": return "ORGANIZATION";
-            case "I-LOC": return "LOCATION";
-            case "I-MISC": return "MISC";
+            case "B-PER": 
+            case "I-PER": 
+                return PIIType.PERSON_NAME;
+            case "B-ORG": 
+            case "I-ORG": 
+                return PIIType.ORGANIZATION;
+            case "B-LOC": 
+            case "I-LOC": 
+                return PIIType.LOCATION;
+            case "B-MISC": 
+            case "I-MISC": 
+                return PIIType.MISC;
             default: 
                 logger.debug("Unmapped entity type: {}", modelEntityType);
                 return null;
@@ -105,7 +109,7 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
         double confidenceSum = 0;
         int entityCount = 0;
         int startPos = -1;
-        String currentType = null;
+        PIIType currentType = null;
 
         for (int i = 0; i < entities.length; i++) {
             NamedEntity entity = entities[i];
@@ -114,20 +118,16 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
             }
 
             String entityType = entity.getEntity();
-            String mappedType = mapEntityType(entityType);
+            PIIType mappedType = mapEntityType(entityType);
             if (mappedType == null) {
                 continue;
             }
 
             if (entityType.startsWith("B-")) {
                 // If we were building an entity, finish it
-                if (currentText.length() > 0) {
-                    piiEntities.add(createEntity(
-                            startPos,
-                            entities[i-1].getEnd(),
-                            currentText.toString().trim(),
-                            confidenceSum / entityCount
-                    ));
+                if (currentText.length() > 0 && currentType != null) {
+                    
+                    piiEntities.add(new PIIEntity(mappedType, startPos, entities[i-1].getEnd(), currentText.toString().trim(), confidenceSum));
                 }
                 // Start new entity
                 currentText = new StringBuilder(entity.getWord());
@@ -135,24 +135,24 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
                 confidenceSum = entity.getScore();
                 entityCount = 1;
                 currentType = mappedType;
-            } else if (entityType.startsWith("I-") && currentText.length() > 0) {
-                // Continue current entity
-                currentText.append(" ").append(entity.getWord());
-                confidenceSum += entity.getScore();
-                entityCount++;
+            } else if (entityType.startsWith("I-") && currentText.length() > 0 && currentType != null) {
+                
+                if (mappedType.equals(currentType)) {
+                    currentText.append(" ").append(entity.getWord());
+                    confidenceSum += entity.getScore();
+                    entityCount++;
+                }
             }
         }
 
         // Add final entity if exists
-        if (currentText.length() > 0) {
-            piiEntities.add(createEntity(
-                    startPos,
-                    entities[entities.length-1].getEnd(),
-                    currentText.toString().trim(),
-                    confidenceSum / entityCount
-            ));
+        if (currentText.length() > 0 && currentType != null) {
+            piiEntities.add(new PIIEntity(currentType, startPos, entities[entities.length-1].getEnd(), currentText.toString().trim(), confidenceSum));
         }
-        System.out.println(piiEntities);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Detected {} entities: {}", piiEntities.size(), piiEntities);
+        }
 
         return piiEntities;
     }

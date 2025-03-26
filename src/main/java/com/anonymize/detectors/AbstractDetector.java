@@ -78,17 +78,4 @@ public abstract class AbstractDetector implements Detector {
     public Set<Locale> getSupportedLocales() {
         return supportedLocales;
     }
-    
-    /**
-     * Helper method to create a PIIEntity with the detector's type.
-     *
-     * @param startPosition Start position of the entity in the text
-     * @param endPosition End position of the entity in the text
-     * @param text The detected text
-     * @param confidence Confidence level of the detection
-     * @return A new PIIEntity
-     */
-    protected PIIEntity createEntity(int startPosition, int endPosition, String text, double confidence) {
-        return new PIIEntity(type, startPosition, endPosition, text, confidence);
-    }
 }

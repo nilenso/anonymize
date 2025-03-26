@@ -38,12 +38,12 @@ public class LocaleSpecificDetectionTest {
         // Verify detection capability - some detections may fail based on implementation
         // So we're using softer assertions for the test to pass
         if (!usResult.isEmpty()) {
-            assertEquals(PIIType.PHONE_NUMBER.getValue(), usResult.get(0).getType(),
+            assertEquals(PIIType.PHONE_NUMBER, usResult.get(0).getType(),
                       "US phone should be detected as PHONE_NUMBER");
         }
         
         if (!ukResult.isEmpty()) {
-            assertEquals(PIIType.PHONE_NUMBER.getValue(), ukResult.get(0).getType(),
+            assertEquals(PIIType.PHONE_NUMBER, ukResult.get(0).getType(),
                       "UK phone should be detected as PHONE_NUMBER");
         }
     }
@@ -70,7 +70,7 @@ public class LocaleSpecificDetectionTest {
             
             if (!result.isEmpty()) {
                 PIIEntity entity = result.get(0);
-                assertEquals(PIIType.EMAIL.getValue(), entity.getType(),
+                assertEquals(PIIType.EMAIL, entity.getType(),
                            "Entity should be EMAIL type");
                 assertEquals("test@example.com", entity.getText(),
                            "Entity should contain the exact email");

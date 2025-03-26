@@ -45,7 +45,7 @@ public class EmailDetector extends BaseRegexDetector {
      * @param locale The locale to use
      */
     public EmailDetector(Locale locale) {
-        super(PIIType.EMAIL.getValue(), locale, getSupportedLocalesStatic(), DEFAULT_CONFIDENCE, DEFAULT_PATTERNS);
+        super(PIIType.EMAIL, locale, getSupportedLocalesStatic(), DEFAULT_CONFIDENCE, DEFAULT_PATTERNS);
     }
     
     /**

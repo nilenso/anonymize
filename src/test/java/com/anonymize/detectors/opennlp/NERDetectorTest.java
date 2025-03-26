@@ -77,7 +77,7 @@ public class NERDetectorTest {
             
             // Verify detected entities are of correct type
             for (PIIEntity entity : entities) {
-                assertEquals(PIIType.PERSON_NAME.getValue(), entity.getType(),
+                assertEquals(PIIType.PERSON_NAME, entity.getType(),
                           "Entity should be PERSON_NAME type");
                 assertTrue(entity.getConfidence() > 0, 
                          "Confidence should be greater than 0");
@@ -116,7 +116,7 @@ public class NERDetectorTest {
             
             // Verify detected entities are of correct type
             for (PIIEntity entity : entities) {
-                assertEquals(PIIType.LOCATION.getValue(), entity.getType(),
+                assertEquals(PIIType.LOCATION, entity.getType(),
                           "Entity should be LOCATION type");
                 assertTrue(entity.getConfidence() > 0, 
                          "Confidence should be greater than 0");

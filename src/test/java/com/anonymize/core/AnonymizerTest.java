@@ -88,7 +88,7 @@ public class AnonymizerTest {
         // Verify email detection
         boolean hasEmailEntity = false;
         for (PIIEntity entity : result.getDetectedEntities()) {
-            if (entity.getType().equals(PIIType.EMAIL.getValue())) {
+            if (entity.getType().equals(PIIType.EMAIL)) {
                 hasEmailEntity = true;
                 break;
             }

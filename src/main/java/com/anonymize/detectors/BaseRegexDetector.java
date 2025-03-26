@@ -2,6 +2,7 @@ package com.anonymize.detectors;
 
 import com.anonymize.common.Locale;
 import com.anonymize.common.PIIEntity;
+import com.anonymize.common.PIIType;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -12,6 +13,9 @@ import java.util.regex.Pattern;
  * Provides a framework for locale-aware, extensible pattern matching.
  */
 public abstract class BaseRegexDetector extends AbstractDetector {
+    private final PIIType type;
+
+    
     
     // Map of locale-specific patterns
     private final Map<Locale, List<String>> localePatterns = new HashMap<>();
@@ -31,9 +35,10 @@ public abstract class BaseRegexDetector extends AbstractDetector {
      * @param defaultConfidence Default confidence level for detected entities
      * @param defaultPatterns Map of default patterns for different locales
      */
-    protected BaseRegexDetector(String type, Locale locale, Set<Locale> supportedLocales,
+    protected BaseRegexDetector(PIIType type, Locale locale, Set<Locale> supportedLocales,
                           double defaultConfidence, Map<Locale, List<String>> defaultPatterns) {
-        super(type, locale, supportedLocales);
+        super(type.getValue(), locale, supportedLocales);
+        this.type = type;
         this.defaultConfidence = defaultConfidence;
         
         // Initialize with default patterns
@@ -53,7 +58,7 @@ public abstract class BaseRegexDetector extends AbstractDetector {
      * @param defaultConfidence Default confidence level for detected entities
      * @param defaultPatterns Map of default patterns for different locales
      */
-    protected BaseRegexDetector(String type, double defaultConfidence, Map<Locale, List<String>> defaultPatterns) {
+    protected BaseRegexDetector(PIIType type, double defaultConfidence, Map<Locale, List<String>> defaultPatterns) {
         this(type, Locale.GENERIC, getSupportedLocalesFrom(defaultPatterns), defaultConfidence, defaultPatterns);
     }
     
@@ -129,7 +134,8 @@ public abstract class BaseRegexDetector extends AbstractDetector {
                 if (!overlaps) {
                     // Allow subclasses to modify confidence based on the pattern match if needed
                     double confidence = calculateConfidence(match, pattern.pattern());
-                    results.add(createEntity(start, end, match, confidence));
+                    
+                    results.add(new PIIEntity(type, start,end,match,confidence));
                 }
             }
         }

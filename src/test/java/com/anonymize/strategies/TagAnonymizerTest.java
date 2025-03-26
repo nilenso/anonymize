@@ -47,7 +47,7 @@ public class TagAnonymizerTest {
         // Verify the entity is of correct type
         if (!result.getDetectedEntities().isEmpty()) {
             PIIEntity entity = result.getDetectedEntities().get(0);
-            assertEquals(PIIType.EMAIL.getValue(), entity.getType(), 
+            assertEquals(PIIType.EMAIL, entity.getType(), 
                        "Entity should be an EMAIL");
             assertEquals("john.doe@example.com", entity.getText(), 
                        "Entity should contain the exact email");
@@ -75,7 +75,7 @@ public class TagAnonymizerTest {
         
         // Verify entities are correctly typed
         for (PIIEntity entity : result.getDetectedEntities()) {
-            assertEquals(PIIType.EMAIL.getValue(), entity.getType(),
+            assertEquals(PIIType.EMAIL, entity.getType(),
                        "All entities should be of type EMAIL");
             assertTrue(entity.getText().contains("@"),
                      "All entities should contain @ symbol");
@@ -109,7 +109,7 @@ public class TagAnonymizerTest {
         boolean hasEmailEntity = false;
         
         for (PIIEntity entity : result.getDetectedEntities()) {
-            if (entity.getType().equals(PIIType.EMAIL.getValue())) {
+            if (entity.getType().equals(PIIType.EMAIL)) {
                 hasEmailEntity = true;
                 assertEquals("email1@example.com", entity.getText(),
                            "Email entity should preserve original text");

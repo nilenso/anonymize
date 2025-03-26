@@ -45,7 +45,7 @@ public class TagAnonymizer implements AnonymizerStrategy {
 
         StringBuilder result = new StringBuilder(text);
         for (PIIEntity entity : sortedEntities) {
-            String type = entity.getType();
+            String type = entity.getType().getValue();
             int counter = typeCounters.getOrDefault(type, 0) + 1;
             typeCounters.put(type, counter);
             

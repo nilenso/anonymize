@@ -91,7 +91,7 @@ public class PhoneNumberDetector extends BaseRegexDetector {
      * @param locale The locale to use for phone pattern matching
      */
     public PhoneNumberDetector(Locale locale) {
-        super(PIIType.PHONE_NUMBER.getValue(), locale, getSupportedLocalesStatic(), 
+        super(PIIType.PHONE_NUMBER, locale, getSupportedLocalesStatic(), 
               DEFAULT_CONFIDENCE, DEFAULT_PATTERNS);
     }
     
@@ -109,7 +109,7 @@ public class PhoneNumberDetector extends BaseRegexDetector {
      * @param patterns The custom patterns to use for this locale
      */
     public PhoneNumberDetector(Locale locale, List<String> patterns) {
-        super(PIIType.PHONE_NUMBER.getValue(), locale, getSupportedLocalesStatic(), 
+        super(PIIType.PHONE_NUMBER, locale, getSupportedLocalesStatic(), 
               DEFAULT_CONFIDENCE, DEFAULT_PATTERNS);
         
         // Override the specified locale with custom patterns if provided

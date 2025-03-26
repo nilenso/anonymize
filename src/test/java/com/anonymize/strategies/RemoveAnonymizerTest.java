@@ -73,7 +73,7 @@ public class RemoveAnonymizerTest {
         // If phone was detected, it should be removed
         boolean phoneDetected = false;
         for (PIIEntity entity : result.getDetectedEntities()) {
-            if (entity.getType().equals(PIIType.PHONE_NUMBER.getValue())) {
+            if (entity.getType().equals(PIIType.PHONE_NUMBER)) {
                 phoneDetected = true;
                 assertFalse(result.getAnonymizedText().contains(entity.getText()),
                           "Phone number should be removed");

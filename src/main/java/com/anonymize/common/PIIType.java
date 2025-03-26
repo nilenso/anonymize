@@ -14,6 +14,7 @@ public enum PIIType {
     LOCATION("LOCATION"),
     DATE_OF_BIRTH("DATE_OF_BIRTH"),
     ADDRESS("ADDRESS"),
+    MISC("MISC"),  // For miscellaneous entities detected by some models
     CUSTOM("CUSTOM");
 
     private final String value;
@@ -26,12 +27,26 @@ public enum PIIType {
         return value;
     }
 
+    /**
+     * Converts a string value to the corresponding PIIType.
+     *
+     * @param value The string value to convert
+     * @return The corresponding PIIType, or CUSTOM if no match is found
+     */
     public static PIIType fromValue(String value) {
+        if (value == null) {
+            return CUSTOM;
+        }
+        
+        // Check for direct matches with enum values
         for (PIIType type : PIIType.values()) {
-            if (type.getValue().equals(value)) {
+            if (type.getValue().equalsIgnoreCase(value)) {
                 return type;
             }
         }
+        
         return CUSTOM;
     }
+
+    
 }

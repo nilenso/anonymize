@@ -122,7 +122,7 @@ public abstract class BaseDJLDetector extends AbstractDetector {
      * @param modelEntityType The entity type from the model
      * @return The corresponding PIIType value
      */
-    protected abstract String mapEntityType(String modelEntityType);
+    protected abstract PIIType mapEntityType(String modelEntityType);
     
  
     public abstract List<PIIEntity> detect(String text);
