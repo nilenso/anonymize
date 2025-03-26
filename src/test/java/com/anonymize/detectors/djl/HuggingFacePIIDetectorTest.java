@@ -50,7 +50,7 @@ public class HuggingFacePIIDetectorTest {
             modelManager = new DJLModelManager();
             
             // Attempt to download the NER model needed for tests
-            String modelId = "ner-bert-base";
+            String modelId = "base-bert-NER";
             System.out.println("Checking/downloading model: " + modelId);
             boolean modelDownloaded = modelManager.ensureModelDownloaded(modelId);
             
@@ -84,7 +84,6 @@ public class HuggingFacePIIDetectorTest {
     }
     
     @Test
-    @EnabledIf("areModelsAvailable")
     public void testPersonDetection() {
         // Create detector with the shared model manager
         HuggingFacePIIDetector detector = new HuggingFacePIIDetector(modelManager);
@@ -137,7 +136,6 @@ public class HuggingFacePIIDetectorTest {
     }
     
     @Test
-    @EnabledIf("areModelsAvailable")
     public void testLocationDetection() {
         // Create detector with the shared model manager
         HuggingFacePIIDetector detector = new HuggingFacePIIDetector(modelManager);
@@ -192,7 +190,6 @@ public class HuggingFacePIIDetectorTest {
     }
     
     @Test
-    @EnabledIf("areModelsAvailable")
     public void testMixedEntityDetection() {
         // Create detector with the shared model manager
         HuggingFacePIIDetector detector = new HuggingFacePIIDetector(modelManager);

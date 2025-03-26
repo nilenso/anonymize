@@ -76,7 +76,7 @@ public class DJLModelManager {
      */
     private void initializeModelUrls() {
         // Setup commonly used NER/PII detection model IDs and their HF URLs
-        modelUrls.put("ner-bert-base", "djl://ai.djl.huggingface.pytorch/dslim/bert-base-NER");
+        modelUrls.put("base-bert-NER", "djl://ai.djl.huggingface.pytorch/dslim/bert-base-NER");
         modelUrls.put("pii-bert", "vietai/phobert-base-v2");
         // Add more models as needed
     }
@@ -147,16 +147,22 @@ public class DJLModelManager {
 
 
 
+        long startTime = System.currentTimeMillis();
+        
         Criteria<String, NamedEntity[]> criteria =
                 Criteria.builder()
                         .setTypes(String.class, NamedEntity[].class)
-                        .optModelUrls( modelUrl)
+                        .optModelName("bert-base-NER.pt")
+                        .optModelUrls(modelUrl)
                         .optEngine("PyTorch")
                         .optOption("mapLocation", "cpu") // Use CPU for inference
                         .optTranslatorFactory(new TokenClassificationTranslatorFactory())
                         .optProgress(new ProgressBar())
                         .build();
         ZooModel<String, NamedEntity[]> model = criteria.loadModel();
+        
+        long duration = System.currentTimeMillis() - startTime;
+        logger.info("Model loading took {} ms", duration);
 
         // Cache the loaded model
         modelCache.put(modelId, model);

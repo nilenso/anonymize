@@ -30,7 +30,7 @@ public class HuggingFacePIIDetector extends BaseDJLDetector {
             "PII",
             Locale.GENERIC,
             Set.of(Locale.GENERIC),
-            "ner-bert-base", // maps to dslim/bert-base-NER in DJLModelManager
+            "base-bert-NER", // maps to dslim/bert-base-NER in DJLModelManager
             modelManager
         );
     }
